@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@open-slide/core':
-        specifier: ^1.2.0
-        version: 1.2.0(@types/node@25.7.0)(@types/react-dom@18.3.7(@types/react@18.3.28))(@types/react@18.3.28)(lightningcss@1.32.0)
+        specifier: ^1.3.0
+        version: 1.3.0(@types/node@25.7.0)(@types/react-dom@18.3.7(@types/react@18.3.28))(@types/react@18.3.28)(lightningcss@1.32.0)
       react:
         specifier: ^18.3.1
         version: 18.3.1
@@ -466,8 +466,8 @@ packages:
   '@open-draft/until@2.1.0':
     resolution: {integrity: sha512-U69T3ItWHvLwGg5eJ0n3I62nWuE6ilHlmz7zM0npLBRvPRd7e6NYmg54vvRtP5mZG7kZqZCFVdsTWo7BPtBujg==}
 
-  '@open-slide/core@1.2.0':
-    resolution: {integrity: sha512-ff0bnfpxV40WL3FfvxYfsNOMJYwvtFG3SauhO06sofcX7ne5WdR+OeZ8kAZ4ymUB/PR6NIJqQd4FZIj/4ruwqA==}
+  '@open-slide/core@1.3.0':
+    resolution: {integrity: sha512-9MTeq6GI5a/ZA6vydQKJxNZNkh/ZDiSoPHfGLKbMtOucrDcB5cCi/MZLT8qA4oHCDcXa4KLfWsuF5rTojjD7Bw==}
     engines: {node: '>=18'}
     hasBin: true
 
@@ -3308,7 +3308,7 @@ snapshots:
 
   '@open-draft/until@2.1.0': {}
 
-  '@open-slide/core@1.2.0(@types/node@25.7.0)(@types/react-dom@18.3.7(@types/react@18.3.28))(@types/react@18.3.28)(lightningcss@1.32.0)':
+  '@open-slide/core@1.3.0(@types/node@25.7.0)(@types/react-dom@18.3.7(@types/react@18.3.28))(@types/react@18.3.28)(lightningcss@1.32.0)':
     dependencies:
       '@babel/parser': 7.29.3
       '@babel/types': 7.29.0
