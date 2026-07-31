@@ -3,6 +3,7 @@ import type { DesignSystem, Page, SlideMeta, SlideTransition } from '@open-slide
 import { useIsActivePage } from '@open-slide/core';
 import avatar from '@assets/avatar.jpg';
 import openSlide from './assets/open-slide.png';
+import cursorMeetup from './assets/cursor-meetup.webp';
 
 
 
@@ -377,6 +378,49 @@ const Stars: Page = () => {
   );
 };
 
+const Meetup: Page = () => (
+  <div style={{ width: '100%', height: '100%', background: 'var(--osd-bg)', position: 'relative' }}>
+    <img
+      src={cursorMeetup}
+      alt="Cursor Meetup"
+      style={{
+        width: '100%',
+        height: '100%',
+        objectFit: 'cover',
+        filter: 'grayscale(1) brightness(0.45)',
+      }}
+    />
+    <div
+      style={{
+        position: 'absolute',
+        inset: 0,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        textAlign: 'center',
+        padding: '0 160px',
+      }}
+    >
+      <h2
+        style={{
+          fontFamily: 'var(--osd-font-display)',
+          fontSize: 120,
+          fontWeight: 700,
+          letterSpacing: '-0.02em',
+          lineHeight: 1.1,
+          margin: 0,
+          color: 'var(--osd-text)',
+        }}
+      >
+        Cursor Meetup Taichung
+      </h2>
+    </div>
+  </div>
+);
+
+// Full-bleed photo page — snap in, no transition.
+Meetup.transition = { duration: 0 };
+
 // House transition — RISE. One motion DNA across the deck.
 export const transition: SlideTransition = {
   duration: 280,
@@ -425,4 +469,4 @@ export const meta: SlideMeta = {
   title: 'open-slide：從騎車時的靈感到衝上 GitHub Trending',
   createdAt: '2026-07-31T16:18:33.859Z',
 };
-export default [Cover, Logo, Stars] satisfies Page[];
+export default [Cover, Logo, Stars, Meetup] satisfies Page[];
