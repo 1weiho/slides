@@ -2915,30 +2915,29 @@ const LiveDemo: Page = () => {
     animate &&
     (typeof window === 'undefined' ||
       !window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-  const [display, setDisplay] = React.useState(play ? '' : DEMO_TEXT);
+  const scramble = (locked: number) => {
+    let next = '';
+    for (let i = 0; i < DEMO_TEXT.length; i++) {
+      if (DEMO_TEXT[i] === ' ') next += ' ';
+      else if (i < locked) next += DEMO_TEXT[i];
+      else next += DEMO_GLYPHS[Math.floor(Math.random() * DEMO_GLYPHS.length)];
+    }
+    return next;
+  };
+  const [display, setDisplay] = React.useState(() => (play ? scramble(0) : DEMO_TEXT));
 
   React.useEffect(() => {
     if (!play) {
       setDisplay(DEMO_TEXT);
       return;
     }
-    setDisplay('');
+    setDisplay(scramble(0));
+    // Scramble from the very first frame; locking starts after a beat.
     const start = performance.now() + 700;
     const timer = setInterval(() => {
       const elapsed = performance.now() - start;
-      if (elapsed < 0) return;
-      const locked = Math.min(Math.floor(elapsed / 140), DEMO_TEXT.length);
-      let next = '';
-      for (let i = 0; i < DEMO_TEXT.length; i++) {
-        if (DEMO_TEXT[i] === ' ') {
-          next += ' ';
-        } else if (i < locked) {
-          next += DEMO_TEXT[i];
-        } else {
-          next += DEMO_GLYPHS[Math.floor(Math.random() * DEMO_GLYPHS.length)];
-        }
-      }
-      setDisplay(next);
+      const locked = Math.max(0, Math.min(Math.floor(elapsed / 140), DEMO_TEXT.length));
+      setDisplay(scramble(locked));
       if (locked >= DEMO_TEXT.length) clearInterval(timer);
     }, 40);
     return () => clearInterval(timer);
