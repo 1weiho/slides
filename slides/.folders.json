@@ -1,4 +1,15 @@
 {
-  "folders": [],
-  "assignments": {}
+  "folders": [
+    {
+      "id": "f-2fa36e61",
+      "name": "Conf",
+      "icon": {
+        "type": "color",
+        "value": "#60646c"
+      }
+    }
+  ],
+  "assignments": {
+    "coscup-open-slide": "f-2fa36e61"
+  }
 }
