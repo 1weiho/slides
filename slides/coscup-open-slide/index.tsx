@@ -97,36 +97,36 @@ const Cover: Page = () => {
         ...fill,
         display: 'flex',
         flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        textAlign: 'center',
-        padding: '0 160px',
+        justifyContent: 'space-between',
+        padding: '120px 160px',
+        textAlign: 'left',
       }}
     >
       <style>{entranceCss}</style>
-      <div style={{ position: 'relative' }}>
-        <div
-          className={rise}
-          style={{
-            fontSize: 26,
-            fontWeight: 600,
-            letterSpacing: '0.28em',
-            color: muted,
-            animationDelay: '0ms',
-          }}
-        >
-          COSCUP 2026
-        </div>
 
+      <div
+        className={rise}
+        style={{
+          fontSize: 26,
+          fontWeight: 600,
+          letterSpacing: '0.28em',
+          color: muted,
+          animationDelay: '0ms',
+        }}
+      >
+        COSCUP 2026
+      </div>
+
+      <div>
         <h1
           className={rise}
           style={{
             fontFamily: 'var(--osd-font-display)',
             fontSize: 'var(--osd-size-hero)',
             fontWeight: 700,
-            letterSpacing: '-0.02em',
+            letterSpacing: '-0.03em',
             lineHeight: 1.05,
-            margin: '36px 0 0',
+            margin: 0,
             color: 'var(--osd-text)',
             animationDelay: '200ms',
           }}
@@ -138,12 +138,12 @@ const Cover: Page = () => {
           className={rise}
           style={{
             fontFamily: 'var(--osd-font-display)',
-            fontSize: 54,
+            fontSize: 50,
             fontWeight: 600,
             letterSpacing: '-0.01em',
             lineHeight: 1.3,
-            margin: '32px 0 0',
-            color: 'var(--osd-text)',
+            margin: '28px 0 0',
+            color: 'rgba(245, 245, 247, 0.6)',
             animationDelay: '440ms',
           }}
         >
@@ -155,25 +155,24 @@ const Cover: Page = () => {
           style={{
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center',
-            gap: 28,
-            marginTop: 96,
+            gap: 24,
+            marginTop: 88,
             animationDelay: '700ms',
           }}
         >
           <div
             style={{
-              width: 112,
-              height: 112,
+              width: 88,
+              height: 88,
               borderRadius: '50%',
               overflow: 'hidden',
               flexShrink: 0,
               boxShadow: '0 0 0 1px rgba(255, 255, 255, 0.12)',
             }}
           >
-            <img src={avatar} alt='講者大頭照（Avatar）' style={{ width: 112, height: 112, objectFit: 'cover', objectPosition: '50% 50%' }} />
+            <img src={avatar} alt='講者大頭照（Avatar）' style={{ width: 88, height: 88, objectFit: 'cover', objectPosition: '50% 50%' }} />
           </div>
-          <div style={{ fontSize: 40, fontWeight: 500, color: 'var(--osd-text)' }}>Yiwei Ho</div>
+          <div style={{ fontSize: 36, fontWeight: 500, color: 'var(--osd-text)' }}>Yiwei Ho</div>
         </div>
       </div>
     </div>
@@ -546,7 +545,8 @@ const HtmlFile: Page = () => {
           <ul
             style={{
               margin: '40px 0 0',
-              paddingLeft: 40,
+              padding: 0,
+              listStylePosition: 'inside',
               fontSize: 32,
               lineHeight: 1.9,
               color: '#3a3a3c',
