@@ -7,6 +7,22 @@ import geistMonoFont from '@assets/geist-mono.woff2';
 import openSlide from './assets/open-slide.png';
 import cursorMeetup from './assets/cursor-meetup.webp';
 
+export const notes: (string | undefined)[] = [
+  undefined,
+  undefined,
+  undefined,
+  undefined,
+  undefined,
+  "每次生成 HTML 需花費大量 Token 讓 Agent 去製作頁數、播放等簡報基礎",
+  "每次生成的操作 UI 都不同",
+  "每次產出的 HTML 都是散落的",
+  undefined,
+  "如果可以有個統一的框架",
+  "如果可以只讓 agent 生成簡報的視覺",
+  "如果可以在一個 workspace 中生成多個且可管理的簡報",
+];
+
+
 // Register Geist once, idempotently — keyed to this slide's id so other
 // slides' fonts aren't suppressed on the home page.
 const FONT_STYLE_ID = 'osd-webfont-coscup-open-slide';
@@ -80,8 +96,13 @@ const entranceCss = `
 .coscup-draw  { animation: coscup-draw  1800ms ${EASE_OUT} 600ms both; }
 .coscup-fade  { animation: coscup-fade  600ms ${EASE_OUT} both; }
 .coscup-token { animation: coscup-token 1000ms cubic-bezier(0.4, 0, 0.2, 1) both; }
+@keyframes coscup-settle {
+  from { opacity: 0; transform: translate(var(--sx, 0px), var(--sy, 0px)) rotate(var(--sr, 0deg)); }
+  to   { opacity: 1; transform: translate(0, 0) rotate(0deg); }
+}
+.coscup-settle { animation: coscup-settle 1100ms ${EASE_ENTRANCE} both; }
 @media (prefers-reduced-motion: reduce) {
-  .coscup-rise, .coscup-bloom, .coscup-draw, .coscup-fade, .coscup-token { animation: none; }
+  .coscup-rise, .coscup-bloom, .coscup-draw, .coscup-fade, .coscup-token, .coscup-settle { animation: none; }
 }
 `;
 
@@ -824,9 +845,11 @@ const TokenCost: Page = () => {
             <TokenBurst x={RAIL_W + 48 + 42} y={FRAME_H - BAR_H / 2} start={1600} />
             <TokenBurst x={RAIL_W + (FRAME_W - RAIL_W) / 2} y={FRAME_H - BAR_H / 2} start={3000} />
             <TokenBurst x={FRAME_W - 48 - 15} y={FRAME_H - BAR_H / 2} start={4400} />
-            {/* Phase 5 — double burst into the content area */}
-            <TokenBurst x={RAIL_W + (FRAME_W - RAIL_W) / 2 - 120} y={180} start={6000} />
-            <TokenBurst x={RAIL_W + (FRAME_W - RAIL_W) / 2 + 80} y={230} start={6450} />
+            {/* Phase 5 — bursts land on the skeleton elements themselves.
+                Content box starts at x = RAIL_W + 72, y = 64; inner width 776. */}
+            <TokenBurst x={RAIL_W + 72 + 0.52 * 776 * 0.5} y={64 + 15} start={6000} />
+            <TokenBurst x={RAIL_W + 72 + 0.72 * 776 * 0.5} y={112 + 8} start={6350} />
+            <TokenBurst x={RAIL_W + 72 + 0.6 * 776 * 0.5} y={146 + 8} start={6700} />
           </>
         )}
       </div>
@@ -1040,6 +1063,463 @@ const Scattered: Page = () => {
   );
 };
 
+// Page 9 — chapter turn. Pure type: the pivot from pain to solution.
+const WhatIf: Page = () => {
+  const animate = useIsActivePage();
+  const fadeDot = (delay: number) => ({
+    className: animate ? 'coscup-fade' : undefined,
+    style: { animationDelay: `${delay}ms` } as React.CSSProperties,
+  });
+
+  return (
+    <div
+      style={{
+        ...fill,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      <style>{entranceCss}</style>
+      <h2
+        className={animate ? 'coscup-rise' : undefined}
+        style={{
+          fontFamily: 'var(--osd-font-display)',
+          fontSize: 150,
+          fontWeight: 700,
+          letterSpacing: '-0.02em',
+          lineHeight: 1.1,
+          margin: 0,
+          color: 'var(--osd-text)',
+          animationDelay: '0ms',
+        }}
+      >
+        What if
+        <span {...fadeDot(900)}>.</span>
+        <span {...fadeDot(1300)}>.</span>
+        <span {...fadeDot(1700)}>.</span>
+      </h2>
+    </div>
+  );
+};
+
+// Section break — exit fully, hold a beat, then enter (BREATH).
+WhatIf.transition = {
+  duration: 460,
+  exit: {
+    duration: 180,
+    easing: EASE_IN,
+    keyframes: [{ opacity: 1 }, { opacity: 0 }],
+  },
+  enter: {
+    duration: 240,
+    delay: 300,
+    easing: EASE_OUT,
+    keyframes: [
+      { opacity: 0, transform: 'translateY(8px)' },
+      { opacity: 1, transform: 'translateY(0)' },
+    ],
+  },
+};
+
+// ——— What-if triptych (pages 10–12): the three answers, same wire language ———
+
+// Page 10 — a unified framework: the whole player kit clicks into place
+// in under two seconds, no tokens burned. Mirrors page 6's layout.
+const Unified: Page = () => {
+  const animate = useIsActivePage();
+  const settleClass = animate ? 'coscup-settle' : undefined;
+  const settleVars = (sx: number, sy: number, delay: number) =>
+    ({
+      '--sx': `${sx}px`,
+      '--sy': `${sy}px`,
+      animationDelay: `${delay}ms`,
+    }) as React.CSSProperties;
+
+  return (
+    <div
+      style={{
+        ...fill,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      <style>{entranceCss}</style>
+
+      <div
+        className={animate ? 'coscup-bloom' : undefined}
+        style={{
+          position: 'relative',
+          width: FRAME_W,
+          height: FRAME_H,
+          border: `2px solid ${wire}`,
+          borderRadius: 24,
+        }}
+      >
+        {/* Sidebar arrives as one finished piece */}
+        <div
+          className={settleClass}
+          style={{
+            ...settleVars(-80, 0, 300),
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            bottom: 0,
+            width: RAIL_W,
+            borderRight: `2px solid ${wireDim}`,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 18,
+            padding: '24px 0',
+          }}
+        >
+          <Thumb on delay={0} animate={false} />
+          <Thumb delay={0} animate={false} />
+          <Thumb delay={0} animate={false} />
+          <Thumb delay={0} animate={false} />
+          <Thumb delay={0} animate={false} />
+        </div>
+
+        {/* Empty content slot, waiting for the agent */}
+        <div
+          className={animate ? 'coscup-fade' : undefined}
+          style={{
+            position: 'absolute',
+            left: RAIL_W + 48,
+            right: 48,
+            top: 48,
+            bottom: BAR_H + 40,
+            border: `2px dashed ${wireDim}`,
+            borderRadius: 16,
+            animationDelay: '1100ms',
+          }}
+        />
+
+        {/* Control bar arrives as one finished piece */}
+        <div
+          className={settleClass}
+          style={{
+            ...settleVars(0, 80, 550),
+            position: 'absolute',
+            left: RAIL_W,
+            right: 0,
+            bottom: 0,
+            height: BAR_H,
+            borderTop: `2px solid ${wireDim}`,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '0 48px',
+          }}
+        >
+          <div style={{ display: 'flex', gap: 24 }}>
+            <Chevron dir="left" />
+            <Chevron dir="right" />
+          </div>
+          <div style={{ display: 'flex', gap: 16 }}>
+            <Dot on />
+            <Dot />
+            <Dot />
+            <Dot />
+            <Dot />
+          </div>
+          <svg width={30} height={30} viewBox="0 0 24 24" style={{ display: 'block' }}>
+            <path
+              d="M4 9 V4 H9 M15 4 H20 V9 M20 15 V20 H15 M9 20 H4 V15"
+              fill="none"
+              stroke={wireBright}
+              strokeWidth={2.2}
+              strokeLinecap="round"
+            />
+          </svg>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Page 11 — the agent only generates the visuals: chrome pre-exists,
+// tokens flow into the content area alone, and the bill stays small.
+const VisualOnly: Page = () => {
+  const animate = useIsActivePage();
+  const tokenCount = useCountUp(28540, animate, 400, 2800);
+
+  return (
+    <div
+      style={{
+        ...fill,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 48,
+      }}
+    >
+      <style>{entranceCss}</style>
+
+      <div
+        className={animate ? 'coscup-bloom' : undefined}
+        style={{
+          position: 'relative',
+          width: FRAME_W,
+          height: FRAME_H,
+          border: `2px solid ${wire}`,
+          borderRadius: 24,
+        }}
+      >
+        {/* Chrome already exists — static from the first frame */}
+        <div
+          style={{
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            bottom: 0,
+            width: RAIL_W,
+            borderRight: `2px solid ${wireDim}`,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 18,
+            padding: '24px 0',
+          }}
+        >
+          <Thumb on delay={0} animate={false} />
+          <Thumb delay={0} animate={false} />
+          <Thumb delay={0} animate={false} />
+          <Thumb delay={0} animate={false} />
+          <Thumb delay={0} animate={false} />
+        </div>
+        <div
+          style={{
+            position: 'absolute',
+            left: RAIL_W,
+            right: 0,
+            bottom: 0,
+            height: BAR_H,
+            borderTop: `2px solid ${wireDim}`,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '0 48px',
+          }}
+        >
+          <div style={{ display: 'flex', gap: 24 }}>
+            <Chevron dir="left" />
+            <Chevron dir="right" />
+          </div>
+          <div style={{ display: 'flex', gap: 16 }}>
+            <Dot on />
+            <Dot />
+            <Dot />
+            <Dot />
+            <Dot />
+          </div>
+          <svg width={30} height={30} viewBox="0 0 24 24" style={{ display: 'block' }}>
+            <path
+              d="M4 9 V4 H9 M15 4 H20 V9 M20 15 V20 H15 M9 20 H4 V15"
+              fill="none"
+              stroke={wireBright}
+              strokeWidth={2.2}
+              strokeLinecap="round"
+            />
+          </svg>
+        </div>
+
+        {/* Only the content is generated */}
+        <div
+          style={{
+            position: 'absolute',
+            left: RAIL_W,
+            right: 0,
+            top: 0,
+            padding: '64px 72px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 18,
+          }}
+        >
+          <div
+            className={animate ? 'coscup-fade' : undefined}
+            style={{
+              width: '52%',
+              height: 30,
+              borderRadius: 8,
+              background: 'rgba(255, 255, 255, 0.30)',
+              animationDelay: '900ms',
+            }}
+          />
+          <div
+            className={animate ? 'coscup-fade' : undefined}
+            style={{ width: '72%', height: 16, borderRadius: 6, background: wireDim, animationDelay: '1250ms' }}
+          />
+          <div
+            className={animate ? 'coscup-fade' : undefined}
+            style={{ width: '60%', height: 16, borderRadius: 6, background: wireDim, animationDelay: '1500ms' }}
+          />
+          <div
+            className={animate ? 'coscup-fade' : undefined}
+            style={{
+              width: '46%',
+              height: 170,
+              marginTop: 14,
+              border: `2px solid ${wire}`,
+              borderRadius: 12,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              animationDelay: '1900ms',
+            }}
+          >
+            <svg width={64} height={48} viewBox="0 0 32 24">
+              <circle cx="10" cy="8" r="3" fill="none" stroke={wireBright} strokeWidth={1.8} />
+              <polyline
+                points="3,21 12,12 18,18 24,10 29,15"
+                fill="none"
+                stroke={wireBright}
+                strokeWidth={1.8}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </div>
+        </div>
+
+        {animate && (
+          <>
+            {/* Targets: title bar, text lines, image block — element centers.
+                Content box starts at x = RAIL_W + 72, y = 64; inner width 776. */}
+            <TokenBurst x={RAIL_W + 72 + 0.52 * 776 * 0.5} y={64 + 15} start={300} />
+            <TokenBurst x={RAIL_W + 72 + 0.72 * 776 * 0.5} y={112 + 25} start={800} />
+            <TokenBurst x={RAIL_W + 72 + 0.46 * 776 * 0.5} y={194 + 85} start={1300} />
+          </>
+        )}
+      </div>
+
+      <div
+        className={animate ? 'coscup-fade' : undefined}
+        style={{
+          fontFamily: monoFont,
+          fontSize: 36,
+          fontVariantNumeric: 'tabular-nums',
+          animationDelay: '400ms',
+        }}
+      >
+        <span style={{ color: muted }}>Token: </span>
+        <span style={{ color: 'var(--osd-text)', fontWeight: 600 }}>
+          {tokenCount.toLocaleString('en-US')}
+        </span>
+      </div>
+    </div>
+  );
+};
+
+// One deck card flying from a scattered pose into its grid slot.
+const DeckCard = ({
+  sx,
+  sy,
+  sr,
+  delay,
+  animate,
+}: {
+  sx: number;
+  sy: number;
+  sr: number;
+  delay: number;
+  animate: boolean;
+}) => (
+  <div
+    className={animate ? 'coscup-settle' : undefined}
+    style={
+      {
+        width: 360,
+        height: 270,
+        border: `2px solid ${wire}`,
+        borderRadius: 14,
+        padding: '36px 32px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 14,
+        '--sx': `${sx}px`,
+        '--sy': `${sy}px`,
+        '--sr': `${sr}deg`,
+        animationDelay: `${delay}ms`,
+      } as React.CSSProperties
+    }
+  >
+    <div style={{ width: '62%', height: 22, borderRadius: 6, background: 'rgba(255, 255, 255, 0.30)' }} />
+    <div style={{ width: '84%', height: 12, borderRadius: 4, background: wireDim }} />
+    <div style={{ width: '70%', height: 12, borderRadius: 4, background: wireDim }} />
+    <div style={{ marginTop: 'auto', display: 'flex', gap: 8 }}>
+      <Dot on />
+      <Dot />
+      <Dot />
+    </div>
+  </div>
+);
+
+// Page 12 — one workspace, many decks: the chaos of page 8 flies into
+// a tidy managed grid.
+const Workspace: Page = () => {
+  const animate = useIsActivePage();
+
+  return (
+    <div
+      style={{
+        ...fill,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      <style>{entranceCss}</style>
+
+      <div
+        className={animate ? 'coscup-bloom' : undefined}
+        style={{
+          width: 1280,
+          border: `2px solid ${wire}`,
+          borderRadius: 24,
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+            height: 64,
+            padding: '0 28px',
+            borderBottom: `2px solid ${wireDim}`,
+          }}
+        >
+          <div style={{ width: 14, height: 14, borderRadius: '50%', background: 'rgba(255, 255, 255, 0.22)' }} />
+          <div style={{ width: 14, height: 14, borderRadius: '50%', background: 'rgba(255, 255, 255, 0.22)' }} />
+          <div style={{ width: 14, height: 14, borderRadius: '50%', background: 'rgba(255, 255, 255, 0.22)' }} />
+        </div>
+
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, 360px)',
+            gap: 40,
+            justifyContent: 'center',
+            padding: '40px 0',
+          }}
+        >
+          <DeckCard sx={-340} sy={-180} sr={-14} delay={300} animate={animate} />
+          <DeckCard sx={220} sy={-260} sr={10} delay={450} animate={animate} />
+          <DeckCard sx={420} sy={140} sr={8} delay={600} animate={animate} />
+          <DeckCard sx={-400} sy={220} sr={12} delay={750} animate={animate} />
+          <DeckCard sx={140} sy={300} sr={-10} delay={900} animate={animate} />
+          <DeckCard sx={-160} sy={-320} sr={6} delay={1050} animate={animate} />
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // House transition — RISE. One motion DNA across the deck.
 export const transition: SlideTransition = {
   duration: 280,
@@ -1088,4 +1568,17 @@ export const meta: SlideMeta = {
   title: 'open-slide：從騎車時的靈感到衝上 GitHub Trending',
   createdAt: '2026-07-31T16:18:33.859Z',
 };
-export default [Cover, Logo, Stars, Meetup, HtmlFile, TokenCost, InconsistentUI, Scattered] satisfies Page[];
+export default [
+  Cover,
+  Logo,
+  Stars,
+  Meetup,
+  HtmlFile,
+  TokenCost,
+  InconsistentUI,
+  Scattered,
+  WhatIf,
+  Unified,
+  VisualOnly,
+  Workspace,
+] satisfies Page[];
