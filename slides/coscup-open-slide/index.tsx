@@ -6,6 +6,7 @@ import geistFont from '@assets/geist.woff2';
 import geistMonoFont from '@assets/geist-mono.woff2';
 import openSlide from './assets/open-slide.png';
 import cursorMeetup from './assets/cursor-meetup.webp';
+import claudeIcon from './assets/claude-ai-icon.svg';
 
 export const notes: (string | undefined)[] = [
   undefined,
@@ -101,8 +102,14 @@ const entranceCss = `
   to   { opacity: 1; transform: translate(0, 0) rotate(0deg); }
 }
 .coscup-settle { animation: coscup-settle 1100ms ${EASE_ENTRANCE} both; }
+@keyframes coscup-hide {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+.coscup-hide { animation: coscup-hide 400ms ${EASE_OUT} both; }
 @media (prefers-reduced-motion: reduce) {
   .coscup-rise, .coscup-bloom, .coscup-draw, .coscup-fade, .coscup-token, .coscup-settle { animation: none; }
+  .coscup-hide { animation: none; opacity: 0; }
 }
 `;
 
@@ -634,6 +641,7 @@ const Dot = ({ on = false }: { on?: boolean }) => (
       height: 10,
       borderRadius: '50%',
       background: on ? wireBright : 'rgba(255, 255, 255, 0.25)',
+      transition: `background 300ms ${EASE_OUT}`,
     }}
   />
 );
@@ -678,6 +686,7 @@ const Thumb = ({ on = false, delay, animate }: { on?: boolean; delay: number; an
       background: on ? 'rgba(255, 255, 255, 0.10)' : 'transparent',
       flexShrink: 0,
       animationDelay: `${delay}ms`,
+      transition: `border-color 300ms ${EASE_OUT}, background 300ms ${EASE_OUT}`,
     }}
   />
 );
@@ -1520,8 +1529,8 @@ const Workspace: Page = () => {
   );
 };
 
-// Page 13 — the payoff: the idea arrives. App-splash reveal of the mark.
-const IdeaBorn: Page = () => {
+// Page 13 — chapter turn into the build: pure type, mirrors WhatIf.
+const LetsBuild: Page = () => {
   const animate = useIsActivePage();
 
   return (
@@ -1529,53 +1538,32 @@ const IdeaBorn: Page = () => {
       style={{
         ...fill,
         display: 'flex',
-        flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        gap: 72,
       }}
     >
       <style>{entranceCss}</style>
-
-      <div
-        className={animate ? 'coscup-bloom' : undefined}
-        style={{
-          width: 200,
-          height: 200,
-          borderRadius: 48,
-          overflow: 'hidden',
-          boxShadow: '0 0 0 1px rgba(255, 255, 255, 0.12)',
-          animationDelay: '0ms',
-        }}
-      >
-        <img
-          src={openSlide}
-          alt="open-slide logo"
-          style={{ width: 200, height: 200, objectFit: 'cover' }}
-        />
-      </div>
-
       <h2
         className={animate ? 'coscup-rise' : undefined}
         style={{
           fontFamily: 'var(--osd-font-display)',
-          fontSize: 'var(--osd-size-hero)',
+          fontSize: 150,
           fontWeight: 700,
           letterSpacing: '-0.02em',
-          lineHeight: 1.05,
+          lineHeight: 1.1,
           margin: 0,
           color: 'var(--osd-text)',
-          animationDelay: '600ms',
+          animationDelay: '0ms',
         }}
       >
-        open-slide
+        Let&rsquo;s build it.
       </h2>
     </div>
   );
 };
 
-// The reveal gets the second (and last) BREATH of the deck.
-IdeaBorn.transition = {
+// Chapter turn — the deck's second and last BREATH.
+LetsBuild.transition = {
   duration: 460,
   exit: {
     duration: 180,
@@ -1591,6 +1579,626 @@ IdeaBorn.transition = {
       { opacity: 1, transform: 'translateY(0)' },
     ],
   },
+};
+
+// ——— Core-goal triptych (pages 14–16): the product taking shape ———
+
+// Page 14 — a fixed page switcher + preview rail, served as a web app.
+// The player cycles pages by itself: thumbs, dots and content in sync.
+const WebAppPlayer: Page = () => {
+  const animate = useIsActivePage();
+  const [idx, setIdx] = React.useState(0);
+
+  React.useEffect(() => {
+    if (!animate || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const timer = setInterval(() => setIdx((i) => (i + 1) % 3), 1800);
+    return () => clearInterval(timer);
+  }, [animate]);
+
+  const pageStyle = (n: number) =>
+    ({
+      position: 'absolute',
+      inset: 0,
+      padding: '56px 64px',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: 16,
+      opacity: idx === n ? 1 : 0,
+      transition: `opacity 400ms ${EASE_OUT}`,
+    }) as const;
+
+  return (
+    <div
+      style={{
+        ...fill,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      <style>{entranceCss}</style>
+
+      <div
+        className={animate ? 'coscup-bloom' : undefined}
+        style={{
+          width: 1240,
+          border: `2px solid ${wire}`,
+          borderRadius: 24,
+          overflow: 'hidden',
+        }}
+      >
+        {/* Browser chrome — it's a web app */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            height: 72,
+            padding: '0 26px',
+            borderBottom: `2px solid ${wireDim}`,
+          }}
+        >
+          <div style={{ display: 'flex', gap: 11, flexShrink: 0 }}>
+            <div style={{ width: 14, height: 14, borderRadius: '50%', background: 'rgba(255, 255, 255, 0.22)' }} />
+            <div style={{ width: 14, height: 14, borderRadius: '50%', background: 'rgba(255, 255, 255, 0.22)' }} />
+            <div style={{ width: 14, height: 14, borderRadius: '50%', background: 'rgba(255, 255, 255, 0.22)' }} />
+          </div>
+          <div
+            style={{
+              flex: 1,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 110px 0 66px',
+              height: 42,
+              borderRadius: 10,
+              background: 'rgba(255, 255, 255, 0.06)',
+              fontFamily: monoFont,
+              fontSize: 21,
+              color: muted,
+            }}
+          >
+            localhost:5173
+          </div>
+        </div>
+
+        <div style={{ position: 'relative', height: 600 }}>
+          {/* Preview rail — active thumb follows the live page */}
+          <div
+            style={{
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              bottom: 0,
+              width: RAIL_W,
+              borderRight: `2px solid ${wireDim}`,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 18,
+              padding: '24px 0',
+            }}
+          >
+            <Thumb on={idx === 0} delay={0} animate={false} />
+            <Thumb on={idx === 1} delay={0} animate={false} />
+            <Thumb on={idx === 2} delay={0} animate={false} />
+            <Thumb delay={0} animate={false} />
+            <Thumb delay={0} animate={false} />
+          </div>
+
+          {/* Live page content — crossfades between three layouts */}
+          <div
+            style={{
+              position: 'absolute',
+              left: RAIL_W,
+              right: 0,
+              top: 0,
+              bottom: BAR_H,
+            }}
+          >
+            <div style={pageStyle(0)}>
+              <div style={{ width: '52%', height: 30, borderRadius: 8, background: 'rgba(255, 255, 255, 0.30)' }} />
+              <div style={{ width: '72%', height: 16, borderRadius: 6, background: wireDim }} />
+              <div style={{ width: '60%', height: 16, borderRadius: 6, background: wireDim }} />
+            </div>
+            <div style={pageStyle(1)}>
+              <div style={{ width: '44%', height: 30, borderRadius: 8, background: 'rgba(255, 255, 255, 0.30)' }} />
+              <div
+                style={{
+                  width: '58%',
+                  height: 240,
+                  marginTop: 10,
+                  border: `2px solid ${wire}`,
+                  borderRadius: 12,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <svg width={60} height={45} viewBox="0 0 32 24">
+                  <circle cx="10" cy="8" r="3" fill="none" stroke={wireBright} strokeWidth={1.8} />
+                  <polyline
+                    points="3,21 12,12 18,18 24,10 29,15"
+                    fill="none"
+                    stroke={wireBright}
+                    strokeWidth={1.8}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </div>
+            </div>
+            <div style={{ ...pageStyle(2), alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ width: '64%', height: 44, borderRadius: 10, background: 'rgba(255, 255, 255, 0.30)' }} />
+              <div style={{ width: '40%', height: 16, borderRadius: 6, background: wireDim }} />
+            </div>
+          </div>
+
+          {/* Fixed switcher — always the same controls */}
+          <div
+            style={{
+              position: 'absolute',
+              left: RAIL_W,
+              right: 0,
+              bottom: 0,
+              height: BAR_H,
+              borderTop: `2px solid ${wireDim}`,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '0 48px',
+            }}
+          >
+            <div style={{ display: 'flex', gap: 24 }}>
+              <Chevron dir="left" />
+              <Chevron dir="right" />
+            </div>
+            <div style={{ display: 'flex', gap: 16 }}>
+              <Dot on={idx === 0} />
+              <Dot on={idx === 1} />
+              <Dot on={idx === 2} />
+            </div>
+            <svg width={30} height={30} viewBox="0 0 24 24" style={{ display: 'block' }}>
+              <path
+                d="M4 9 V4 H9 M15 4 H20 V9 M20 15 V20 H15 M9 20 H4 V15"
+                fill="none"
+                stroke={wireBright}
+                strokeWidth={2.2}
+                strokeLinecap="round"
+              />
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// One image tile in the asset panel.
+const AssetTile = ({ dim = false }: { dim?: boolean }) => (
+  <div
+    style={{
+      width: 190,
+      height: 130,
+      border: `2px solid ${dim ? wireDim : wire}`,
+      borderRadius: 12,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+    }}
+  >
+    <svg width={44} height={33} viewBox="0 0 32 24">
+      <circle cx="10" cy="8" r="3" fill="none" stroke={dim ? wire : wireBright} strokeWidth={1.8} />
+      <polyline
+        points="3,21 12,12 18,18 24,10 29,15"
+        fill="none"
+        stroke={dim ? wire : wireBright}
+        strokeWidth={1.8}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  </div>
+);
+
+// Page 15 — assets matter: a proper asset manager, and an image flies
+// from the panel straight into the slide's image slot.
+const ASSET_FLY_CSS = `
+@keyframes coscup-asset-fly {
+  0%   { opacity: 0; transform: translate(0, 0) scale(1); }
+  10%  { opacity: 1; transform: translate(0, 0) scale(1.06); }
+  60%  { opacity: 1; transform: translate(-914px, 106px) scale(1.58); }
+  76%  { opacity: 0; transform: translate(-914px, 106px) scale(1.58); }
+  100% { opacity: 0; transform: translate(-914px, 106px) scale(1.58); }
+}
+.coscup-asset-fly { animation: coscup-asset-fly 2600ms ${EASE_ENTRANCE} 1200ms both; }
+@media (prefers-reduced-motion: reduce) {
+  .coscup-asset-fly { animation: none; opacity: 0; }
+}
+`;
+
+const AssetManager: Page = () => {
+  const animate = useIsActivePage();
+
+  return (
+    <div
+      style={{
+        ...fill,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      <style>{entranceCss}</style>
+      <style>{ASSET_FLY_CSS}</style>
+
+      <div style={{ position: 'relative', display: 'flex', gap: 60 }}>
+        {/* The slide, with an empty image slot */}
+        <div
+          className={animate ? 'coscup-bloom' : undefined}
+          style={{
+            width: 900,
+            height: 620,
+            border: `2px solid ${wire}`,
+            borderRadius: 24,
+            padding: '64px 72px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 18,
+            animationDelay: '0ms',
+          }}
+        >
+          <div style={{ width: '54%', height: 30, borderRadius: 8, background: 'rgba(255, 255, 255, 0.30)' }} />
+          <div style={{ width: '74%', height: 16, borderRadius: 6, background: wireDim }} />
+          <div style={{ width: '62%', height: 16, borderRadius: 6, background: wireDim }} />
+          <div style={{ position: 'relative', marginTop: 22, width: 300, height: 205 }}>
+            {/* Dashed slot, hidden once the asset lands */}
+            <div
+              className={animate ? 'coscup-hide' : undefined}
+              style={{
+                position: 'absolute',
+                inset: 0,
+                border: `2px dashed ${wireDim}`,
+                borderRadius: 12,
+                animationDelay: '2650ms',
+              }}
+            />
+            {/* The landed image */}
+            <div
+              className={animate ? 'coscup-fade' : undefined}
+              style={{
+                position: 'absolute',
+                inset: 0,
+                border: `2px solid ${wire}`,
+                borderRadius: 12,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                animationDelay: '2650ms',
+              }}
+            >
+              <svg width={64} height={48} viewBox="0 0 32 24">
+                <circle cx="10" cy="8" r="3" fill="none" stroke={wireBright} strokeWidth={1.8} />
+                <polyline
+                  points="3,21 12,12 18,18 24,10 29,15"
+                  fill="none"
+                  stroke={wireBright}
+                  strokeWidth={1.8}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        {/* Asset manager panel */}
+        <div
+          className={animate ? 'coscup-rise' : undefined}
+          style={{
+            width: 480,
+            height: 620,
+            border: `2px solid ${wire}`,
+            borderRadius: 24,
+            padding: 28,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 22,
+            animationDelay: '250ms',
+          }}
+        >
+          {/* Search pill */}
+          <div
+            style={{
+              height: 48,
+              borderRadius: 12,
+              background: 'rgba(255, 255, 255, 0.06)',
+              display: 'flex',
+              alignItems: 'center',
+              padding: '0 18px',
+              gap: 12,
+            }}
+          >
+            <svg width={20} height={20} viewBox="0 0 24 24">
+              <circle cx="10" cy="10" r="6" fill="none" stroke={muted} strokeWidth={2.2} />
+              <line x1="15" y1="15" x2="20" y2="20" stroke={muted} strokeWidth={2.2} strokeLinecap="round" />
+            </svg>
+            <div style={{ width: 120, height: 12, borderRadius: 4, background: wireDim }} />
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 190px)', gap: 22 }}>
+            <AssetTile />
+            <AssetTile dim />
+            <AssetTile dim />
+            <AssetTile dim />
+            <AssetTile dim />
+            <AssetTile dim />
+          </div>
+        </div>
+
+        {/* Flying copy of the first tile → into the slot.
+            Start = tile(0,0) top-left; target = slot top-left. */}
+        {animate && (
+          <div
+            className="coscup-asset-fly"
+            style={{ position: 'absolute', left: 988, top: 98, transformOrigin: 'top left' }}
+          >
+            <AssetTile />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// Page 16 — one workspace: new decks just appear, no per-deck init.
+const OneWorkspace: Page = () => {
+  const animate = useIsActivePage();
+
+  const plusSlot = (
+    <svg width={44} height={44} viewBox="0 0 24 24">
+      <line x1="12" y1="5" x2="12" y2="19" stroke={muted} strokeWidth={2.2} strokeLinecap="round" />
+      <line x1="5" y1="12" x2="19" y2="12" stroke={muted} strokeWidth={2.2} strokeLinecap="round" />
+    </svg>
+  );
+
+  return (
+    <div
+      style={{
+        ...fill,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      <style>{entranceCss}</style>
+
+      <div
+        className={animate ? 'coscup-bloom' : undefined}
+        style={{
+          width: 1280,
+          border: `2px solid ${wire}`,
+          borderRadius: 24,
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+            height: 64,
+            padding: '0 28px',
+            borderBottom: `2px solid ${wireDim}`,
+          }}
+        >
+          <div style={{ width: 14, height: 14, borderRadius: '50%', background: 'rgba(255, 255, 255, 0.22)' }} />
+          <div style={{ width: 14, height: 14, borderRadius: '50%', background: 'rgba(255, 255, 255, 0.22)' }} />
+          <div style={{ width: 14, height: 14, borderRadius: '50%', background: 'rgba(255, 255, 255, 0.22)' }} />
+        </div>
+
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, 360px)',
+            gap: 40,
+            justifyContent: 'center',
+            padding: '40px 0',
+          }}
+        >
+          <DeckCard sx={0} sy={0} sr={0} delay={0} animate={animate} />
+          <DeckCard sx={0} sy={0} sr={0} delay={150} animate={animate} />
+          <DeckCard sx={0} sy={0} sr={0} delay={300} animate={animate} />
+
+          {/* Slot 4 — "+" becomes a real deck, instantly */}
+          <div style={{ position: 'relative', width: 360, height: 270 }}>
+            <div
+              className={animate ? 'coscup-hide' : undefined}
+              style={{
+                position: 'absolute',
+                inset: 0,
+                border: `2px dashed ${wireDim}`,
+                borderRadius: 14,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                animationDelay: '1700ms',
+                opacity: animate ? undefined : 0,
+              }}
+            >
+              {plusSlot}
+            </div>
+            <div
+              className={animate ? 'coscup-fade' : undefined}
+              style={{ position: 'absolute', inset: 0, animationDelay: '1800ms' }}
+            >
+              <DeckCard sx={0} sy={0} sr={0} delay={0} animate={false} />
+            </div>
+          </div>
+
+          {/* Slot 5 — and the next "+" is already waiting */}
+          <div
+            className={animate ? 'coscup-fade' : undefined}
+            style={{
+              width: 360,
+              height: 270,
+              border: `2px dashed ${wireDim}`,
+              borderRadius: 14,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              animationDelay: '2600ms',
+            }}
+          >
+            {plusSlot}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Page 17 — the actual prompt, typed live into a Claude Code session.
+const PROMPT_TEXT = `我要開發一個用於讓 agent 生成投影片的框架，生成的投影片是純 React，一個 slide 就是一個 tsx file。框架會提供 Page 等 component primitive，讓 agent 可以在上面自由地設計視覺；頁面切換、側邊欄預覽、簡報播放等功能則由框架提供。然後，再提供一個簡易的 web app 來檢視所有簡報。
+
+我的想像是：
+
+slides
+├─ first-slide
+│  ├─ index.tsx
+│  └─ assets
+└─ second-slide
+   ├─ index.tsx
+   └─ assets
+
+這個 web app 可以在首頁看到有兩個 slide，而 slide 本身又是單純的 React，因此可以讓所有 AI agent 生成新的簡報或進行調整。`;
+
+const TYPE_CSS = `
+@keyframes coscup-blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+.coscup-blink { animation: coscup-blink 1000ms step-end infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .coscup-blink { animation: none; }
+}
+`;
+
+const ClaudePrompt: Page = () => {
+  const animate = useIsActivePage();
+  const [typed, setTyped] = React.useState(animate ? 0 : PROMPT_TEXT.length);
+
+  React.useEffect(() => {
+    if (!animate || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setTyped(PROMPT_TEXT.length);
+      return;
+    }
+    setTyped(0);
+    let timer: ReturnType<typeof setInterval>;
+    const kickoff = setTimeout(() => {
+      timer = setInterval(() => {
+        setTyped((n) => {
+          if (n >= PROMPT_TEXT.length) {
+            clearInterval(timer);
+            return n;
+          }
+          return n + 1;
+        });
+      }, 18);
+    }, 900);
+    return () => {
+      clearTimeout(kickoff);
+      clearInterval(timer);
+    };
+  }, [animate]);
+
+  return (
+    <div
+      style={{
+        ...fill,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      <style>{entranceCss}</style>
+      <style>{TYPE_CSS}</style>
+
+      <div
+        className={animate ? 'coscup-bloom' : undefined}
+        style={{
+          width: 1400,
+          height: 880,
+          border: `2px solid ${wire}`,
+          borderRadius: 24,
+          background: '#111114',
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
+        }}
+      >
+        {/* Terminal chrome */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 11,
+            height: 56,
+            padding: '0 24px',
+            borderBottom: `2px solid ${wireDim}`,
+            flexShrink: 0,
+          }}
+        >
+          <div style={{ width: 14, height: 14, borderRadius: '50%', background: 'rgba(255, 255, 255, 0.22)' }} />
+          <div style={{ width: 14, height: 14, borderRadius: '50%', background: 'rgba(255, 255, 255, 0.22)' }} />
+          <div style={{ width: 14, height: 14, borderRadius: '50%', background: 'rgba(255, 255, 255, 0.22)' }} />
+          <div
+            style={{
+              flex: 1,
+              textAlign: 'center',
+              marginRight: 64,
+              fontFamily: monoFont,
+              fontSize: 20,
+              color: muted,
+            }}
+          >
+            claude
+          </div>
+        </div>
+
+        <div style={{ flex: 1, padding: 36, display: 'flex', flexDirection: 'column', gap: 24 }}>
+          {/* Session header */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <img src={claudeIcon} alt="Claude" style={{ width: 40, height: 40 }} />
+            <div style={{ fontFamily: monoFont, fontSize: 24, color: 'var(--osd-text)', fontWeight: 500 }}>
+              Claude Code
+            </div>
+          </div>
+
+          {/* Prompt input */}
+          <div
+            style={{
+              flex: 1,
+              border: `2px solid ${wire}`,
+              borderRadius: 16,
+              padding: '24px 28px',
+              fontFamily: monoFont,
+              fontSize: 20,
+              lineHeight: 1.65,
+              color: 'var(--osd-text)',
+              whiteSpace: 'pre-wrap',
+            }}
+          >
+            <span style={{ color: muted }}>{'> '}</span>
+            {PROMPT_TEXT.slice(0, typed)}
+            <span
+              className="coscup-blink"
+              style={{ display: 'inline-block', width: 11, height: 24, background: wireBright, verticalAlign: '-3px' }}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 // House transition — RISE. One motion DNA across the deck.
@@ -1654,5 +2262,9 @@ export default [
   Unified,
   VisualOnly,
   Workspace,
-  IdeaBorn,
+  LetsBuild,
+  WebAppPlayer,
+  AssetManager,
+  OneWorkspace,
+  ClaudePrompt,
 ] satisfies Page[];
