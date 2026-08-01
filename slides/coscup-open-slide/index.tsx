@@ -3,6 +3,7 @@ import type { DesignSystem, Page, SlideMeta, SlideTransition } from '@open-slide
 import { useIsActivePage } from '@open-slide/core';
 import avatar from '@assets/avatar.jpg';
 import geistFont from '@assets/geist.woff2';
+import geistMonoFont from '@assets/geist-mono.woff2';
 import openSlide from './assets/open-slide.png';
 import cursorMeetup from './assets/cursor-meetup.webp';
 
@@ -16,6 +17,12 @@ if (typeof document !== 'undefined' && !document.getElementById(FONT_STYLE_ID)) 
 @font-face {
   font-family: 'Geist';
   src: url('${geistFont}') format('woff2');
+  font-weight: 100 900;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Geist Mono';
+  src: url('${geistMonoFont}') format('woff2');
   font-weight: 100 900;
   font-display: swap;
 }`;
@@ -36,6 +43,7 @@ export const design: DesignSystem = {
 
 // Extra tokens outside the DesignSystem shape.
 const muted = '#86868b';
+const monoFont = '"Geist Mono", ui-monospace, "SF Mono", Menlo, monospace';
 
 const EASE_OUT = 'cubic-bezier(0, 0, 0.2, 1)';
 const EASE_IN = 'cubic-bezier(0.4, 0, 1, 1)';
@@ -437,6 +445,135 @@ const Meetup: Page = () => (
 // Full-bleed photo page — snap in, no transition.
 Meetup.transition = { duration: 0 };
 
+// Monochrome mock of a slide running as a plain HTML file in a browser.
+const HtmlFile: Page = () => {
+  const animate = useIsActivePage();
+  const rise = animate ? 'coscup-rise' : undefined;
+
+  return (
+    <div
+      style={{
+        ...fill,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        textAlign: 'center',
+        padding: '0 160px',
+      }}
+    >
+      <style>{entranceCss}</style>
+
+      <div
+        className={rise}
+        style={{
+          width: 1460,
+          borderRadius: 20,
+          border: '1px solid rgba(255, 255, 255, 0.14)',
+          background: '#111114',
+          overflow: 'hidden',
+          animationDelay: '0ms',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            height: 84,
+            padding: '0 28px',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+          }}
+        >
+          <div style={{ display: 'flex', gap: 12, flexShrink: 0 }}>
+            <div style={{ width: 16, height: 16, borderRadius: '50%', background: 'rgba(255, 255, 255, 0.22)' }} />
+            <div style={{ width: 16, height: 16, borderRadius: '50%', background: 'rgba(255, 255, 255, 0.22)' }} />
+            <div style={{ width: 16, height: 16, borderRadius: '50%', background: 'rgba(255, 255, 255, 0.22)' }} />
+          </div>
+          <div
+            style={{
+              flex: 1,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 120px 0 72px',
+              height: 48,
+              borderRadius: 12,
+              background: 'rgba(255, 255, 255, 0.06)',
+              fontFamily: monoFont,
+              fontSize: 24,
+            }}
+          >
+            <span style={{ color: muted }}>file:///Users/speaker/talk/</span>
+            <span style={{ color: 'var(--osd-text)' }}>k8s-talk.html</span>
+          </div>
+        </div>
+
+        <div
+          style={{
+            position: 'relative',
+            height: 740,
+            background: '#fafafa',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            textAlign: 'left',
+            padding: '0 96px',
+          }}
+        >
+          <div
+            style={{
+              fontSize: 20,
+              fontWeight: 600,
+              letterSpacing: '0.18em',
+              color: '#8e8e93',
+            }}
+          >
+            AGENDA
+          </div>
+          <div
+            style={{
+              fontFamily: 'var(--osd-font-display)',
+              fontSize: 54,
+              fontWeight: 700,
+              letterSpacing: '-0.01em',
+              lineHeight: 1.2,
+              marginTop: 20,
+              color: '#111114',
+            }}
+          >
+            深入淺出 Kubernetes
+          </div>
+          <ul
+            style={{
+              margin: '40px 0 0',
+              paddingLeft: 40,
+              fontSize: 32,
+              lineHeight: 1.9,
+              color: '#3a3a3c',
+            }}
+          >
+            <li>為什麼需要容器編排</li>
+            <li>Pod、Service、Deployment 三分鐘搞懂</li>
+            <li>踩坑經驗與實戰案例</li>
+          </ul>
+          <div
+            style={{
+              position: 'absolute',
+              right: 40,
+              bottom: 30,
+              fontFamily: monoFont,
+              fontSize: 22,
+              color: '#8e8e93',
+            }}
+          >
+            12 / 48
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // House transition — RISE. One motion DNA across the deck.
 export const transition: SlideTransition = {
   duration: 280,
@@ -485,4 +622,4 @@ export const meta: SlideMeta = {
   title: 'open-slide：從騎車時的靈感到衝上 GitHub Trending',
   createdAt: '2026-07-31T16:18:33.859Z',
 };
-export default [Cover, Logo, Stars, Meetup] satisfies Page[];
+export default [Cover, Logo, Stars, Meetup, HtmlFile] satisfies Page[];
