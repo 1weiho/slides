@@ -2201,6 +2201,135 @@ const ClaudePrompt: Page = () => {
   );
 };
 
+// One bundled-skill document card.
+const SkillCard = ({ name, delay, animate }: { name: string; delay: number; animate: boolean }) => (
+  <div
+    className={animate ? 'coscup-rise' : undefined}
+    style={{
+      width: 300,
+      height: 210,
+      border: `2px solid ${wire}`,
+      borderRadius: 16,
+      padding: '28px 30px',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: 13,
+      animationDelay: `${delay}ms`,
+    }}
+  >
+    <div style={{ fontFamily: monoFont, fontSize: 22, color: 'var(--osd-text)' }}>{name}</div>
+    <div style={{ width: '88%', height: 11, borderRadius: 4, background: wireDim, marginTop: 8 }} />
+    <div style={{ width: '72%', height: 11, borderRadius: 4, background: wireDim }} />
+    <div style={{ width: '80%', height: 11, borderRadius: 4, background: wireDim }} />
+    <div style={{ width: '56%', height: 11, borderRadius: 4, background: wireDim }} />
+  </div>
+);
+
+// Page 18 — the framework is designed for agents, so it's skills-first:
+// skills ship with the project, an updater keeps them fresh, and every
+// primitive is documented as a skill.
+const SPIN_CSS = `
+@keyframes coscup-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(720deg); }
+}
+.coscup-spin { animation: coscup-spin 1400ms ${EASE_ENTRANCE} 1300ms both; }
+@media (prefers-reduced-motion: reduce) {
+  .coscup-spin { animation: none; }
+}
+`;
+
+const SkillsFirst: Page = () => {
+  const animate = useIsActivePage();
+  const rise = animate ? 'coscup-rise' : undefined;
+
+  return (
+    <div
+      style={{
+        ...fill,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        textAlign: 'center',
+        padding: '0 160px',
+      }}
+    >
+      <style>{entranceCss}</style>
+      <style>{SPIN_CSS}</style>
+
+      <div
+        className={rise}
+        style={{
+          fontSize: 26,
+          fontWeight: 600,
+          letterSpacing: '0.28em',
+          color: muted,
+          animationDelay: '0ms',
+        }}
+      >
+        DESIGNED FOR AGENTS
+      </div>
+
+      <h2
+        className={rise}
+        style={{
+          fontFamily: 'var(--osd-font-display)',
+          fontSize: 120,
+          fontWeight: 700,
+          letterSpacing: '-0.02em',
+          lineHeight: 1.1,
+          margin: '24px 0 0',
+          color: 'var(--osd-text)',
+          animationDelay: '180ms',
+        }}
+      >
+        Skills First
+      </h2>
+
+      <div style={{ display: 'flex', gap: 44, marginTop: 72 }}>
+        <SkillCard name="create-slide" delay={450} animate={animate} />
+        <SkillCard name="slide-authoring" delay={600} animate={animate} />
+        <SkillCard name="apply-comments" delay={750} animate={animate} />
+      </div>
+
+      <div
+        className={animate ? 'coscup-fade' : undefined}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 18,
+          marginTop: 56,
+          padding: '18px 36px',
+          border: `2px solid ${wire}`,
+          borderRadius: 999,
+          animationDelay: '1100ms',
+        }}
+      >
+        <svg className={animate ? 'coscup-spin' : undefined} width={28} height={28} viewBox="0 0 24 24">
+          <path
+            d="M20 12a8 8 0 1 1-2.34-5.66"
+            fill="none"
+            stroke={wireBright}
+            strokeWidth={2.2}
+            strokeLinecap="round"
+          />
+          <polyline
+            points="18,2 18,6.6 13.4,6.6"
+            fill="none"
+            stroke={wireBright}
+            strokeWidth={2.2}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+        <div style={{ fontFamily: monoFont, fontSize: 24, color: 'var(--osd-text)' }}>sync:skills</div>
+        <div style={{ fontFamily: monoFont, fontSize: 22, color: muted }}>v1.16.0 → v1.17.1</div>
+      </div>
+    </div>
+  );
+};
+
 // House transition — RISE. One motion DNA across the deck.
 export const transition: SlideTransition = {
   duration: 280,
@@ -2267,4 +2396,5 @@ export default [
   AssetManager,
   OneWorkspace,
   ClaudePrompt,
+  SkillsFirst,
 ] satisfies Page[];
