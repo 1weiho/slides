@@ -311,7 +311,7 @@ const Stars: Page = () => {
       <div
         className={rise}
         style={{
-          fontFamily: 'var(--osd-font-display)',
+          fontFamily: monoFont,
           fontSize: 168,
           fontWeight: 700,
           letterSpacing: '-0.02em',
