@@ -2,17 +2,33 @@ import React from 'react';
 import type { DesignSystem, Page, SlideMeta, SlideTransition } from '@open-slide/core';
 import { useIsActivePage } from '@open-slide/core';
 import avatar from '@assets/avatar.jpg';
+import geistFont from '@assets/geist.woff2';
 import openSlide from './assets/open-slide.png';
 import cursorMeetup from './assets/cursor-meetup.webp';
+
+// Register Geist once, idempotently — keyed to this slide's id so other
+// slides' fonts aren't suppressed on the home page.
+const FONT_STYLE_ID = 'osd-webfont-coscup-open-slide';
+if (typeof document !== 'undefined' && !document.getElementById(FONT_STYLE_ID)) {
+  const style = document.createElement('style');
+  style.id = FONT_STYLE_ID;
+  style.textContent = `
+@font-face {
+  font-family: 'Geist';
+  src: url('${geistFont}') format('woff2');
+  font-weight: 100 900;
+  font-display: swap;
+}`;
+  document.head.appendChild(style);
+}
 
 
 
 export const design: DesignSystem = {
   palette: { bg: '#000000', text: '#f5f5f7', accent: '#2997ff' },
   fonts: {
-    display:
-      '-apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang TC", "Noto Sans TC", system-ui, sans-serif',
-    body: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang TC", "Noto Sans TC", system-ui, sans-serif',
+    display: '"Geist", "PingFang TC", "Noto Sans TC", system-ui, sans-serif',
+    body: '"Geist", "PingFang TC", "Noto Sans TC", system-ui, sans-serif',
   },
   typeScale: { hero: 176, body: 40 },
   radius: 24,
