@@ -69,12 +69,19 @@ const entranceCss = `
   from { opacity: 0; }
   to   { opacity: 1; }
 }
+@keyframes coscup-token {
+  0%   { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(1); }
+  15%  { opacity: 0.85; }
+  80%  { opacity: 0.85; }
+  100% { opacity: 0; transform: translate(0, 0) scale(0.3); }
+}
 .coscup-rise  { animation: coscup-rise  1200ms ${EASE_ENTRANCE} both; }
 .coscup-bloom { animation: coscup-bloom 1400ms ${EASE_ENTRANCE} both; }
 .coscup-draw  { animation: coscup-draw  1800ms ${EASE_OUT} 600ms both; }
 .coscup-fade  { animation: coscup-fade  600ms ${EASE_OUT} both; }
+.coscup-token { animation: coscup-token 1000ms cubic-bezier(0.4, 0, 0.2, 1) both; }
 @media (prefers-reduced-motion: reduce) {
-  .coscup-rise, .coscup-bloom, .coscup-draw, .coscup-fade { animation: none; }
+  .coscup-rise, .coscup-bloom, .coscup-draw, .coscup-fade, .coscup-token { animation: none; }
 }
 `;
 
@@ -255,7 +262,13 @@ const starPath = STAR_SERIES.map(
 const easeOutQuint = (t: number) => 1 - Math.pow(1 - t, 5);
 
 // Counts 0 → target in sync with the line draw (same delay + duration).
-const useCountUp = (target: number, active: boolean, delay: number, duration: number) => {
+const useCountUp = (
+  target: number,
+  active: boolean,
+  delay: number,
+  duration: number,
+  ease: (t: number) => number = easeOutQuint,
+) => {
   const [value, setValue] = React.useState(active ? 0 : target);
   React.useEffect(() => {
     if (!active || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
@@ -266,12 +279,12 @@ const useCountUp = (target: number, active: boolean, delay: number, duration: nu
     const start = performance.now() + delay;
     const tick = (now: number) => {
       const t = Math.min(Math.max((now - start) / duration, 0), 1);
-      setValue(Math.round(target * easeOutQuint(t)));
+      setValue(Math.round(target * ease(t)));
       if (t < 1) raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [target, active, delay, duration]);
+  }, [target, active, delay, duration, ease]);
   return value;
 };
 
@@ -574,6 +587,459 @@ const HtmlFile: Page = () => {
   );
 };
 
+// ——— Pain-point triptych (pages 6–8): pure graphics, narrated live ———
+
+const wire = 'rgba(255, 255, 255, 0.28)';
+const wireDim = 'rgba(255, 255, 255, 0.12)';
+const wireBright = 'rgba(255, 255, 255, 0.85)';
+
+const Chevron = ({ dir, size = 28, color = wireBright }: { dir: 'left' | 'right'; size?: number; color?: string }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" style={{ display: 'block' }}>
+    <polyline
+      points={dir === 'left' ? '15,4 8,12 15,20' : '9,4 16,12 9,20'}
+      fill="none"
+      stroke={color}
+      strokeWidth={2.5}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+const Dot = ({ on = false }: { on?: boolean }) => (
+  <div
+    style={{
+      width: 10,
+      height: 10,
+      borderRadius: '50%',
+      background: on ? wireBright : 'rgba(255, 255, 255, 0.25)',
+    }}
+  />
+);
+
+const SkeletonLines = () => (
+  <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+    <div style={{ width: '52%', height: 30, borderRadius: 8, background: 'rgba(255, 255, 255, 0.30)' }} />
+    <div style={{ width: '72%', height: 16, borderRadius: 6, background: wireDim }} />
+    <div style={{ width: '60%', height: 16, borderRadius: 6, background: wireDim }} />
+  </div>
+);
+
+// One flying token particle. --dx/--dy set its start offset; it converges
+// on the player chrome and dissolves, looping while the page is active.
+const TokenDot = ({ dx, dy, delay }: { dx: number; dy: number; delay: number }) => (
+  <div
+    className="coscup-token"
+    style={
+      {
+        position: 'absolute',
+        width: 13,
+        height: 13,
+        borderRadius: 4,
+        background: 'rgba(255, 255, 255, 0.75)',
+        '--dx': `${dx}px`,
+        '--dy': `${dy}px`,
+        animationDelay: `${delay}ms`,
+      } as React.CSSProperties
+    }
+  />
+);
+
+// One thumbnail in the sidebar preview rail.
+const Thumb = ({ on = false, delay, animate }: { on?: boolean; delay: number; animate: boolean }) => (
+  <div
+    className={animate ? 'coscup-fade' : undefined}
+    style={{
+      width: 152,
+      height: 88,
+      borderRadius: 10,
+      border: `2px solid ${on ? wire : wireDim}`,
+      background: on ? 'rgba(255, 255, 255, 0.10)' : 'transparent',
+      flexShrink: 0,
+      animationDelay: `${delay}ms`,
+    }}
+  />
+);
+
+// A burst of tokens converging on one exact chrome target. The group sits
+// at the target's center, so every particle lands precisely on it.
+const TokenBurst = ({ x, y, start }: { x: number; y: number; start: number }) => (
+  <div style={{ position: 'absolute', left: x, top: y }}>
+    <TokenDot dx={-560} dy={-420} delay={start} />
+    <TokenDot dx={340} dy={-580} delay={start + 60} />
+    <TokenDot dx={520} dy={-500} delay={start + 130} />
+    <TokenDot dx={-640} dy={-280} delay={start + 190} />
+    <TokenDot dx={-720} dy={-100} delay={start + 260} />
+    <TokenDot dx={140} dy={-660} delay={start + 320} />
+    <TokenDot dx={680} dy={-200} delay={start + 390} />
+    <TokenDot dx={-440} dy={-520} delay={start + 450} />
+    <TokenDot dx={-300} dy={-560} delay={start + 520} />
+    <TokenDot dx={600} dy={-360} delay={start + 580} />
+    <TokenDot dx={240} dy={-620} delay={start + 650} />
+    <TokenDot dx={-180} dy={-700} delay={start + 710} />
+  </div>
+);
+
+// Page 6 — tokens burn on rebuilding the same player chrome every time.
+// The player assembles piece by piece: thumbnail rail → prev/next →
+// pagination dots → fullscreen — and only THEN does the actual slide
+// content get generated, burning the counter into the 300k range.
+const FRAME_W = 1120;
+const FRAME_H = 620;
+const RAIL_W = 200;
+const BAR_H = 92;
+
+const TOKEN_UI = 135327; // spent on player chrome (phases 1–4, ends ~6.0s)
+const TOKEN_TOTAL = 334127; // after generating the content itself
+const TOKEN_DURATION = 8200;
+const UI_SHARE = TOKEN_UI / TOKEN_TOTAL;
+const UI_TIME = 6000 / TOKEN_DURATION;
+// Steady burn while the chrome builds, then a faster second surge for
+// the content phase, easing out into the final total.
+const tokenEase = (t: number) =>
+  t < UI_TIME
+    ? (t / UI_TIME) * UI_SHARE
+    : UI_SHARE + (1 - Math.pow(1 - (t - UI_TIME) / (1 - UI_TIME), 3)) * (1 - UI_SHARE);
+
+const TokenCost: Page = () => {
+  const animate = useIsActivePage();
+  const tokenCount = useCountUp(TOKEN_TOTAL, animate, 200, TOKEN_DURATION, tokenEase);
+
+  return (
+    <div
+      style={{
+        ...fill,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 48,
+      }}
+    >
+      <style>{entranceCss}</style>
+
+      <div
+        className={animate ? 'coscup-bloom' : undefined}
+        style={{
+          position: 'relative',
+          width: FRAME_W,
+          height: FRAME_H,
+          border: `2px solid ${wire}`,
+          borderRadius: 24,
+        }}
+      >
+        {/* Phase 1 — sidebar preview rail */}
+        <div
+          style={{
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            bottom: 0,
+            width: RAIL_W,
+            borderRight: `2px solid ${wireDim}`,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 18,
+            padding: '24px 0',
+          }}
+        >
+          <Thumb on delay={800} animate={animate} />
+          <Thumb delay={950} animate={animate} />
+          <Thumb delay={1100} animate={animate} />
+          <Thumb delay={1250} animate={animate} />
+          <Thumb delay={1400} animate={animate} />
+        </div>
+
+        {/* Phase 5 — the content itself, generated last */}
+        <div
+          className={animate ? 'coscup-fade' : undefined}
+          style={{
+            position: 'absolute',
+            left: RAIL_W,
+            right: 0,
+            top: 0,
+            padding: '64px 72px',
+            animationDelay: '6900ms',
+          }}
+        >
+          <SkeletonLines />
+        </div>
+
+        {/* Bottom control bar */}
+        <div
+          style={{
+            position: 'absolute',
+            left: RAIL_W,
+            right: 0,
+            bottom: 0,
+            height: BAR_H,
+            borderTop: `2px solid ${wireDim}`,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '0 48px',
+          }}
+        >
+          {/* Phase 2 — prev / next */}
+          <div
+            className={animate ? 'coscup-fade' : undefined}
+            style={{ display: 'flex', gap: 24, animationDelay: '2450ms' }}
+          >
+            <Chevron dir="left" />
+            <Chevron dir="right" />
+          </div>
+          {/* Phase 3 — pagination dots */}
+          <div
+            className={animate ? 'coscup-fade' : undefined}
+            style={{ display: 'flex', gap: 16, animationDelay: '3850ms' }}
+          >
+            <Dot on />
+            <Dot />
+            <Dot />
+            <Dot />
+            <Dot />
+          </div>
+          {/* Phase 4 — fullscreen */}
+          <div
+            className={animate ? 'coscup-fade' : undefined}
+            style={{ animationDelay: '5250ms' }}
+          >
+            <svg width={30} height={30} viewBox="0 0 24 24" style={{ display: 'block' }}>
+              <path
+                d="M4 9 V4 H9 M15 4 H20 V9 M20 15 V20 H15 M9 20 H4 V15"
+                fill="none"
+                stroke={wireBright}
+                strokeWidth={2.2}
+                strokeLinecap="round"
+              />
+            </svg>
+          </div>
+        </div>
+
+        {animate && (
+          <>
+            {/* Targets: rail center, chevron pair, dot row, fullscreen icon */}
+            <TokenBurst x={RAIL_W / 2} y={FRAME_H / 2} start={200} />
+            <TokenBurst x={RAIL_W + 48 + 42} y={FRAME_H - BAR_H / 2} start={1600} />
+            <TokenBurst x={RAIL_W + (FRAME_W - RAIL_W) / 2} y={FRAME_H - BAR_H / 2} start={3000} />
+            <TokenBurst x={FRAME_W - 48 - 15} y={FRAME_H - BAR_H / 2} start={4400} />
+            {/* Phase 5 — double burst into the content area */}
+            <TokenBurst x={RAIL_W + (FRAME_W - RAIL_W) / 2 - 120} y={180} start={6000} />
+            <TokenBurst x={RAIL_W + (FRAME_W - RAIL_W) / 2 + 80} y={230} start={6450} />
+          </>
+        )}
+      </div>
+
+      <div
+        className={animate ? 'coscup-fade' : undefined}
+        style={{
+          fontFamily: monoFont,
+          fontSize: 36,
+          fontVariantNumeric: 'tabular-nums',
+          animationDelay: '200ms',
+        }}
+      >
+        <span style={{ color: muted }}>Token: </span>
+        <span style={{ color: 'var(--osd-text)', fontWeight: 600 }}>
+          {tokenCount.toLocaleString('en-US')}
+        </span>
+      </div>
+    </div>
+  );
+};
+
+// Page 7 — same skeleton, three different control layouts every generation.
+const InconsistentUI: Page = () => {
+  const animate = useIsActivePage();
+  const rise = animate ? 'coscup-rise' : undefined;
+
+  const card = {
+    position: 'relative',
+    width: 460,
+    height: 520,
+    border: `2px solid ${wire}`,
+    borderRadius: 20,
+    flexShrink: 0,
+  } as const;
+
+  return (
+    <div
+      style={{
+        ...fill,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 60,
+      }}
+    >
+      <style>{entranceCss}</style>
+
+      <div className={rise} style={{ ...card, animationDelay: '0ms' }}>
+        <div style={{ padding: '52px 48px' }}>
+          <SkeletonLines />
+        </div>
+        <div
+          style={{
+            position: 'absolute',
+            left: 0,
+            right: 0,
+            bottom: 36,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 24,
+          }}
+        >
+          <Chevron dir="left" size={24} />
+          <div style={{ display: 'flex', gap: 12 }}>
+            <Dot on />
+            <Dot />
+            <Dot />
+            <Dot />
+          </div>
+          <Chevron dir="right" size={24} />
+        </div>
+      </div>
+
+      <div className={rise} style={{ ...card, animationDelay: '220ms' }}>
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '58%',
+            height: 5,
+            borderRadius: '20px 0 4px 0',
+            background: wireBright,
+          }}
+        />
+        <div style={{ padding: '52px 48px' }}>
+          <SkeletonLines />
+        </div>
+        <div style={{ position: 'absolute', left: 20, top: '50%', transform: 'translateY(-50%)' }}>
+          <Chevron dir="left" size={30} />
+        </div>
+        <div style={{ position: 'absolute', right: 20, top: '50%', transform: 'translateY(-50%)' }}>
+          <Chevron dir="right" size={30} />
+        </div>
+      </div>
+
+      <div className={rise} style={{ ...card, animationDelay: '440ms' }}>
+        <div style={{ padding: '52px 48px' }}>
+          <SkeletonLines />
+        </div>
+        <div
+          style={{
+            position: 'absolute',
+            right: 28,
+            top: '50%',
+            transform: 'translateY(-50%)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 12,
+          }}
+        >
+          <Dot on />
+          <Dot />
+          <Dot />
+          <Dot />
+        </div>
+        <div
+          style={{
+            position: 'absolute',
+            left: 40,
+            bottom: 32,
+            width: 60,
+            height: 60,
+            borderRadius: '50%',
+            border: `2px solid ${wireBright}`,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <svg width={22} height={22} viewBox="0 0 24 24">
+            <polygon points="8,5 19,12 8,19" fill={wireBright} />
+          </svg>
+        </div>
+        <div
+          style={{
+            position: 'absolute',
+            left: 0,
+            right: 120,
+            bottom: 0,
+            height: 5,
+            borderRadius: '0 4px 0 20px',
+            background: wireDim,
+          }}
+        />
+      </div>
+    </div>
+  );
+};
+
+// One scattered .html file card.
+const HtmlCard = ({
+  name,
+  x,
+  y,
+  rot,
+  delay,
+  animate,
+}: {
+  name: string;
+  x: number;
+  y: number;
+  rot: number;
+  delay: number;
+  animate: boolean;
+}) => (
+  <div style={{ position: 'absolute', left: x, top: y, transform: `rotate(${rot}deg)` }}>
+    <div
+      className={animate ? 'coscup-rise' : undefined}
+      style={{
+        width: 200,
+        height: 244,
+        border: `2px solid ${wire}`,
+        borderRadius: 16,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 24,
+        animationDelay: `${delay}ms`,
+      }}
+    >
+      <div style={{ fontFamily: monoFont, fontSize: 40, fontWeight: 500, color: wireBright }}>
+        {'</>'}
+      </div>
+      <div style={{ fontFamily: monoFont, fontSize: 19, color: muted, maxWidth: 176, textAlign: 'center' }}>
+        {name}
+      </div>
+    </div>
+  </div>
+);
+
+// Page 8 — every run leaves another stray .html behind.
+const Scattered: Page = () => {
+  const animate = useIsActivePage();
+
+  return (
+    <div style={{ ...fill }}>
+      <style>{entranceCss}</style>
+      <HtmlCard name="slides.html" x={260} y={150} rot={-9} delay={0} animate={animate} />
+      <HtmlCard name="slides-v2.html" x={780} y={95} rot={5} delay={140} animate={animate} />
+      <HtmlCard name="deck(3).html" x={1310} y={170} rot={-5} delay={280} animate={animate} />
+      <HtmlCard name="untitled-1.html" x={510} y={480} rot={11} delay={420} animate={animate} />
+      <HtmlCard name="final-FINAL.html" x={1030} y={430} rot={-12} delay={560} animate={animate} />
+      <HtmlCard name="backup_old.html" x={1500} y={620} rot={8} delay={700} animate={animate} />
+      <HtmlCard name="tmp.html" x={250} y={700} rot={6} delay={840} animate={animate} />
+      <HtmlCard name="new-new-slides.html" x={840} y={760} rot={-6} delay={980} animate={animate} />
+    </div>
+  );
+};
+
 // House transition — RISE. One motion DNA across the deck.
 export const transition: SlideTransition = {
   duration: 280,
@@ -622,4 +1088,4 @@ export const meta: SlideMeta = {
   title: 'open-slide：從騎車時的靈感到衝上 GitHub Trending',
   createdAt: '2026-07-31T16:18:33.859Z',
 };
-export default [Cover, Logo, Stars, Meetup, HtmlFile] satisfies Page[];
+export default [Cover, Logo, Stars, Meetup, HtmlFile, TokenCost, InconsistentUI, Scattered] satisfies Page[];
