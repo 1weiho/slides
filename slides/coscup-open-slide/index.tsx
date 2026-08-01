@@ -3541,6 +3541,130 @@ const LaunchTweet: Page = () => {
   );
 };
 
+// One compact tweet card for the build-in-public wall.
+const TweetCard = ({
+  text,
+  date,
+  delay,
+  animate,
+}: {
+  text: string;
+  date: string;
+  delay: number;
+  animate: boolean;
+}) => (
+  <div
+    style={{
+      width: 560,
+      height: 380,
+      display: 'flex',
+      flexDirection: 'column',
+      border: `2px solid ${wire}`,
+      borderRadius: 20,
+      background: '#111114',
+      padding: '26px 30px',
+      ...(animate
+        ? { animation: `coscup-bloom 1400ms ${EASE_ENTRANCE} ${delay}ms both` }
+        : {}),
+    }}
+  >
+    <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+      <div style={{ width: 44, height: 44, borderRadius: '50%', overflow: 'hidden', flexShrink: 0 }}>
+        <img src={avatar} alt="Yiwei Ho" style={{ width: 44, height: 44, objectFit: 'cover' }} />
+      </div>
+      <div>
+        <div style={{ fontSize: 21, fontWeight: 700, color: 'var(--osd-text)', lineHeight: 1.25 }}>
+          Yiwei Ho
+        </div>
+        <div style={{ fontSize: 18, color: muted, lineHeight: 1.25 }}>@1weiho</div>
+      </div>
+      <svg width={22} height={22} viewBox="0 0 24 24" style={{ marginLeft: 'auto' }}>
+        <path
+          d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"
+          fill="rgba(245, 245, 247, 0.85)"
+        />
+      </svg>
+    </div>
+    <div
+      style={{
+        marginTop: 16,
+        fontSize: 21,
+        lineHeight: 1.5,
+        color: 'var(--osd-text)',
+        whiteSpace: 'pre-wrap',
+      }}
+    >
+      {text}
+    </div>
+    <div style={{ marginTop: 'auto', fontSize: 18, color: muted }}>{date}</div>
+  </div>
+);
+
+// Page 27 — the feature tweets pop up one by one, in shipping order.
+const FeatureTweets: Page = () => {
+  const animate = useIsActivePage();
+  const pop = (i: number) => 300 + i * 280;
+
+  return (
+    <div
+      style={{
+        ...fill,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 40,
+      }}
+    >
+      <style>{entranceCss}</style>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 40 }}>
+        <TweetCard
+          text={'The agents can now "see" your slides - without needing a browser.\n\nopen-slide v1.2.0 ships today. 🧵'}
+          date="May 10, 2026"
+          delay={pop(0)}
+          animate={animate}
+        />
+        <TweetCard
+          text={'Every AI slide tool ships with the same transitions: fade, slide, cube. But we took a different path.\n\nopen-slide was built agent-first from day one - we gave the agent the primitives…'}
+          date="May 24, 2026"
+          delay={pop(3)}
+          animate={animate}
+        />
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 40 }}>
+        <TweetCard
+          text={'Introducing Image Placeholder in open-slide:\n\n→ Agent drops smart placeholders into your layout\n→ Drag & drop your real images in\n→ Auto-saved to /assets, ready to deploy'}
+          date="May 13, 2026"
+          delay={pop(1)}
+          animate={animate}
+        />
+        <TweetCard
+          text={'Introducing Step - a new primitive in open-slide that makes a deck feel alive.\n\nStep lets you reveal elements one at a time - press → to walk through a slide piece by piece…'}
+          date="June 4, 2026"
+          delay={pop(4)}
+          animate={animate}
+        />
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 40 }}>
+        <TweetCard
+          text={'Introducing Global Assets in open-slide:\n\n→ Drop your shared files (logos, avatars, icons) into one place\n→ Reuse them in any slide\n→ Even reference them from your theme'}
+          date="May 15, 2026"
+          delay={pop(2)}
+          animate={animate}
+        />
+        <TweetCard
+          text={'Introducing Morph Transition in open-slide.\n\nAI-generated presentations can now have Keynote-style Magic Move effects.'}
+          date="July 18, 2026"
+          delay={pop(5)}
+          animate={animate}
+        />
+      </div>
+    </div>
+  );
+};
+
 export default [
   Cover,
   Logo,
@@ -3568,4 +3692,5 @@ export default [
   LiveDemo,
   BuildInPublic,
   LaunchTweet,
+  FeatureTweets,
 ] satisfies Page[];
