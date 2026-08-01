@@ -8,6 +8,7 @@ import openSlide from './assets/open-slide.png';
 import cursorMeetup from './assets/cursor-meetup.webp';
 import claudeIcon from './assets/claude-ai-icon.svg';
 import firstVersion from './assets/first-version.webp';
+import zara from './assets/zara.jpg';
 import launchVideo from './assets/launch-video.webp';
 import opus5Tweet from './assets/opus-5-tweet.webp';
 
@@ -3774,6 +3775,116 @@ const BetterTogether: Page = () => {
   );
 };
 
+// One numbered takeaway row for the X-growth playbook.
+const PlaybookRow = ({ n, text }: { n: string; text: string }) => (
+  <div style={{ display: 'flex', alignItems: 'baseline', gap: 32 }}>
+    <div style={{ fontFamily: monoFont, fontSize: 28, color: muted, flexShrink: 0 }}>{n}</div>
+    <div
+      style={{
+        fontFamily: 'var(--osd-font-display)',
+        fontSize: 42,
+        fontWeight: 600,
+        letterSpacing: '-0.01em',
+        lineHeight: 1.4,
+        color: 'var(--osd-text)',
+      }}
+    >
+      {text}
+    </div>
+  </div>
+);
+
+// Page 29 — the X growth playbook, one beat per point (details narrated).
+const GrowthPlaybook: Page = () => {
+  const animate = useIsActivePage();
+
+  return (
+    <div
+      style={{
+        ...fill,
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        padding: '0 200px',
+      }}
+    >
+      <style>{entranceCss}</style>
+
+      <Steps>
+        <h2
+          className={animate ? 'coscup-rise' : undefined}
+          style={{
+            fontFamily: 'var(--osd-font-display)',
+            fontSize: 64,
+            fontWeight: 700,
+            letterSpacing: '-0.02em',
+            lineHeight: 1.2,
+            margin: '0 0 64px',
+            color: 'var(--osd-text)',
+            animationDelay: '0ms',
+          }}
+        >
+          在 X 上成長的 5 堂課
+        </h2>
+        <Step duration={240}>
+          <div style={{ marginBottom: 40 }}>
+            <PlaybookRow n="01" text="先調校你的動態牆" />
+          </div>
+        </Step>
+        <Step duration={240}>
+          <div style={{ marginBottom: 40 }}>
+            <PlaybookRow n="02" text="真誠地回覆，絕不用 AI 機器人代發" />
+          </div>
+        </Step>
+        <Step duration={240}>
+          <div style={{ marginBottom: 40 }}>
+            <PlaybookRow n="03" text="反射性地、持續地發文（最重要）" />
+          </div>
+        </Step>
+        <Step duration={240}>
+          <div style={{ marginBottom: 40 }}>
+            <PlaybookRow n="04" text="建立自己的品味和聲音之前，別用 AI 寫作" />
+          </div>
+        </Step>
+        <Step duration={240}>
+          <PlaybookRow n="05" text="目標不是漲粉，而是做自己的同時漲粉" />
+        </Step>
+        <div
+          className={animate ? 'coscup-rise' : undefined}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 18,
+            marginTop: 72,
+            animationDelay: '250ms',
+          }}
+        >
+          <div
+            style={{
+              width: 52,
+              height: 52,
+              borderRadius: '50%',
+              overflow: 'hidden',
+              flexShrink: 0,
+              boxShadow: '0 0 0 1px rgba(255, 255, 255, 0.12)',
+            }}
+          >
+            <img src={zara} alt="Zara Zhang" style={{ width: 52, height: 52, objectFit: 'cover' }} />
+          </div>
+          <div>
+            <div style={{ fontSize: 25, fontWeight: 600, color: 'var(--osd-text)', lineHeight: 1.3 }}>
+              Zara Zhang
+            </div>
+            <div style={{ fontSize: 21, fontFamily: monoFont, color: muted, lineHeight: 1.3 }}>
+              @zarazhangrui
+            </div>
+          </div>
+        </div>
+      </Steps>
+    </div>
+  );
+};
+
 export default [
   Cover,
   Logo,
@@ -3803,4 +3914,5 @@ export default [
   LaunchTweet,
   FeatureTweets,
   BetterTogether,
+  GrowthPlaybook,
 ] satisfies Page[];
