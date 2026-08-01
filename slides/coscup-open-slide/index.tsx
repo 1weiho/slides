@@ -2903,6 +2903,90 @@ const ApplyDemo: Page = () => {
   );
 };
 
+// Page 22 — LIVE DEMO. Terminal decode: glyphs churn and lock in one by
+// one, left to right, then a block cursor keeps blinking until the
+// screen switch.
+const DEMO_TEXT = 'Live Demo';
+const DEMO_GLYPHS = '!<>-_\\/[]{}=+*^?#$%&0123456789ABCDEF';
+
+const LiveDemo: Page = () => {
+  const animate = useIsActivePage();
+  const play =
+    animate &&
+    (typeof window === 'undefined' ||
+      !window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  const [display, setDisplay] = React.useState(play ? '' : DEMO_TEXT);
+
+  React.useEffect(() => {
+    if (!play) {
+      setDisplay(DEMO_TEXT);
+      return;
+    }
+    setDisplay('');
+    const start = performance.now() + 700;
+    const timer = setInterval(() => {
+      const elapsed = performance.now() - start;
+      if (elapsed < 0) return;
+      const locked = Math.min(Math.floor(elapsed / 140), DEMO_TEXT.length);
+      let next = '';
+      for (let i = 0; i < DEMO_TEXT.length; i++) {
+        if (DEMO_TEXT[i] === ' ') {
+          next += ' ';
+        } else if (i < locked) {
+          next += DEMO_TEXT[i];
+        } else {
+          next += DEMO_GLYPHS[Math.floor(Math.random() * DEMO_GLYPHS.length)];
+        }
+      }
+      setDisplay(next);
+      if (locked >= DEMO_TEXT.length) clearInterval(timer);
+    }, 40);
+    return () => clearInterval(timer);
+  }, [play]);
+
+  return (
+    <div
+      style={{
+        ...fill,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      <style>{entranceCss}</style>
+      <style>{TYPE_CSS}</style>
+
+      <div
+        className={animate ? 'coscup-fade' : undefined}
+        style={{
+          fontFamily: monoFont,
+          fontSize: 150,
+          fontWeight: 600,
+          letterSpacing: '-0.01em',
+          color: 'var(--osd-text)',
+          textShadow: '0 0 60px rgba(255, 255, 255, 0.25)',
+          whiteSpace: 'pre',
+          animationDelay: '100ms',
+        }}
+      >
+        <span style={{ color: muted, textShadow: 'none' }}>{'> '}</span>
+        {display}
+        <span
+          className="coscup-blink"
+          style={{
+            display: 'inline-block',
+            width: 74,
+            height: 140,
+            marginLeft: 24,
+            background: wireBright,
+            verticalAlign: '-12px',
+          }}
+        />
+      </div>
+    </div>
+  );
+};
+
 // Shared morph transition for the 18 → 19 cut (both directions):
 // opacity-only fades so the gliding clones carry all the motion.
 const morphTransition: SlideTransition = {
@@ -3010,4 +3094,5 @@ export default [
   SkillInvoke,
   SkillDocs,
   ApplyDemo,
+  LiveDemo,
 ] satisfies Page[];
