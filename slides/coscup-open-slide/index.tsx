@@ -9,6 +9,9 @@ import cursorMeetup from './assets/cursor-meetup.webp';
 import claudeIcon from './assets/claude-ai-icon.svg';
 import firstVersion from './assets/first-version.webp';
 import launchVideo from './assets/launch-video.webp';
+import opus5Tweet from './assets/opus-5-tweet.webp';
+
+
 
 
 export const notes: (string | undefined)[] = [
@@ -3665,6 +3668,112 @@ const FeatureTweets: Page = () => {
   );
 };
 
+// Page 28 — connect your product to the ones people already love:
+// open-slide × Opus 5, and the tweet that proves the resonance.
+const BetterTogether: Page = () => {
+  const animate = useIsActivePage();
+
+  return (
+    <div
+      style={{
+        ...fill,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 44,
+      }}
+    >
+      <style>{entranceCss}</style>
+
+      {/* Collab lockup */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 36 }}>
+        <div
+          className={animate ? 'coscup-bloom' : undefined}
+          style={{
+            width: 108,
+            height: 108,
+            borderRadius: 26,
+            overflow: 'hidden',
+            boxShadow: '0 0 0 1px rgba(255, 255, 255, 0.12)',
+            animationDelay: '0ms',
+          }}
+        >
+          <img src={openSlide} alt="open-slide" style={{ width: 108, height: 108, objectFit: 'cover' }} />
+        </div>
+        <div
+          className={animate ? 'coscup-fade' : undefined}
+          style={{ fontSize: 52, fontWeight: 600, color: muted, animationDelay: '350ms' }}
+        >
+          ×
+        </div>
+        <div
+          className={animate ? 'coscup-bloom' : undefined}
+          style={{
+            width: 108,
+            height: 108,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            animationDelay: '150ms',
+          }}
+        >
+          <img src={claudeIcon} alt="Claude Opus 5" style={{ width: 88, height: 88 }} />
+        </div>
+      </div>
+
+      {/* The resonance tweet */}
+      <div
+        className={animate ? 'coscup-bloom' : undefined}
+        style={{
+          width: 760,
+          border: `2px solid ${wire}`,
+          borderRadius: 24,
+          background: '#111114',
+          padding: '30px 36px',
+          animationDelay: '500ms',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <div style={{ width: 56, height: 56, borderRadius: '50%', overflow: 'hidden', flexShrink: 0 }}>
+            <img src={avatar} alt="Yiwei Ho" style={{ width: 56, height: 56, objectFit: 'cover' }} />
+          </div>
+          <div>
+            <div style={{ fontSize: 25, fontWeight: 700, color: 'var(--osd-text)' }}>Yiwei Ho</div>
+            <div style={{ fontSize: 21, color: muted }}>@1weiho</div>
+          </div>
+          <svg width={26} height={26} viewBox="0 0 24 24" style={{ marginLeft: 'auto' }}>
+            <path
+              d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"
+              fill="rgba(245, 245, 247, 0.85)"
+            />
+          </svg>
+        </div>
+
+        <div style={{ marginTop: 18, fontSize: 25, lineHeight: 1.5, color: 'var(--osd-text)' }}>
+          <div>Made this slide in 15 min using open-slide + opus 5.</div>
+          <div style={{ marginTop: 16 }}>
+            Turns out opus 5 is really good at morph transitions and step animations in open-slide!
+          </div>
+        </div>
+
+        <div
+          style={{
+            marginTop: 20,
+            borderRadius: 14,
+            overflow: 'hidden',
+            border: `1px solid ${wireDim}`,
+          }}
+        >
+          <img src={opus5Tweet} alt='推文附圖（opus 5 生成的投影片截圖）' style={{ width: 684, height: 330, objectFit: 'cover', objectPosition: '50% 50%', objectViewBox: 'inset(13.03% 6.85% 21.58% 6.75%)' }} />
+        </div>
+
+        <div style={{ marginTop: 16, fontSize: 20, color: muted }}>July 26, 2026</div>
+      </div>
+    </div>
+  );
+};
+
 export default [
   Cover,
   Logo,
@@ -3693,4 +3802,5 @@ export default [
   BuildInPublic,
   LaunchTweet,
   FeatureTweets,
+  BetterTogether,
 ] satisfies Page[];
