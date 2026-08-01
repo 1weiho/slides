@@ -7,6 +7,7 @@ import geistMonoFont from '@assets/geist-mono.woff2';
 import openSlide from './assets/open-slide.png';
 import cursorMeetup from './assets/cursor-meetup.webp';
 import claudeIcon from './assets/claude-ai-icon.svg';
+import firstVersion from './assets/first-version.webp';
 
 export const notes: (string | undefined)[] = [
   undefined,
@@ -2201,6 +2202,141 @@ const ClaudePrompt: Page = () => {
   );
 };
 
+// Page 18 — the first try: what Claude produced, and the project
+// structure it generated, as a designed file tree (no raw ASCII).
+const TreeRow = ({
+  depth,
+  name,
+  folder = false,
+  bright = false,
+  delay,
+  animate,
+}: {
+  depth: number;
+  name: string;
+  folder?: boolean;
+  bright?: boolean;
+  delay: number;
+  animate: boolean;
+}) => (
+  <div
+    className={animate ? 'coscup-fade' : undefined}
+    style={{
+      display: 'flex',
+      alignItems: 'center',
+      gap: 14,
+      height: 34,
+      paddingLeft: depth * 36,
+      animationDelay: `${delay}ms`,
+    }}
+  >
+    {folder ? (
+      <svg width={21} height={21} viewBox="0 0 24 24" style={{ flexShrink: 0 }}>
+        <path
+          d="M3 7 a2 2 0 0 1 2-2 h4.5 l2 2.5 H19 a2 2 0 0 1 2 2 V17 a2 2 0 0 1-2 2 H5 a2 2 0 0 1-2-2 Z"
+          fill="none"
+          stroke={bright ? wireBright : wire}
+          strokeWidth={1.8}
+          strokeLinejoin="round"
+        />
+      </svg>
+    ) : (
+      <svg width={21} height={21} viewBox="0 0 24 24" style={{ flexShrink: 0 }}>
+        <path
+          d="M6 3 h8 l4 4 v13 a1 1 0 0 1-1 1 H7 a1 1 0 0 1-1-1 Z"
+          fill="none"
+          stroke={bright ? wireBright : wire}
+          strokeWidth={1.8}
+          strokeLinejoin="round"
+        />
+        <path d="M14 3 v4 h4" fill="none" stroke={bright ? wireBright : wire} strokeWidth={1.8} strokeLinejoin="round" />
+      </svg>
+    )}
+    <div
+      style={{
+        fontFamily: monoFont,
+        fontSize: 21,
+        color: bright ? 'var(--osd-text)' : 'rgba(245, 245, 247, 0.72)',
+      }}
+    >
+      {name}
+    </div>
+  </div>
+);
+
+const FirstTry: Page = () => {
+  const animate = useIsActivePage();
+
+  return (
+    <div
+      style={{
+        ...fill,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 48,
+      }}
+    >
+      <style>{entranceCss}</style>
+
+      <div
+        className={animate ? 'coscup-rise' : undefined}
+        style={{
+          fontSize: 26,
+          fontWeight: 600,
+          letterSpacing: '0.28em',
+          color: muted,
+          animationDelay: '0ms',
+        }}
+      >
+        FIRST TRY
+      </div>
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: 56 }}>
+        <div
+          className={animate ? 'coscup-bloom' : undefined}
+          style={{
+            width: 1050,
+            height: 599,
+            border: `2px solid ${wire}`,
+            borderRadius: 10,
+            overflow: 'hidden',
+            flexShrink: 0,
+            animationDelay: '150ms',
+          }}
+        >
+          <img
+            src={firstVersion}
+            alt="open-slide first version"
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          />
+        </div>
+
+        <div>
+          <TreeRow depth={0} name="slides" folder delay={350} animate={animate} />
+          <TreeRow depth={1} name="example-deck" folder delay={390} animate={animate} />
+          <TreeRow depth={2} name="index.tsx" bright delay={430} animate={animate} />
+          <TreeRow depth={0} name="src" folder delay={510} animate={animate} />
+          <TreeRow depth={1} name="components" folder delay={550} animate={animate} />
+          <TreeRow depth={2} name="Player.tsx" delay={590} animate={animate} />
+          <TreeRow depth={2} name="SlideCanvas.tsx" delay={630} animate={animate} />
+          <TreeRow depth={2} name="ThumbnailRail.tsx" delay={670} animate={animate} />
+          <TreeRow depth={1} name="lib" folder delay={710} animate={animate} />
+          <TreeRow depth={2} name="decks.ts" delay={750} animate={animate} />
+          <TreeRow depth={2} name="sdk.ts" delay={790} animate={animate} />
+          <TreeRow depth={1} name="routes" folder delay={830} animate={animate} />
+          <TreeRow depth={2} name="Deck.tsx" delay={870} animate={animate} />
+          <TreeRow depth={2} name="Home.tsx" delay={910} animate={animate} />
+          <TreeRow depth={1} name="App.tsx" delay={950} animate={animate} />
+          <TreeRow depth={1} name="main.tsx" delay={990} animate={animate} />
+          <TreeRow depth={1} name="styles.css" delay={1030} animate={animate} />
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // One bundled-skill document card. `morphId` pairs it across pages 18/19;
 // `dim` mutes everything but the featured skill.
 const SkillCard = ({
@@ -3089,6 +3225,7 @@ export default [
   AssetManager,
   OneWorkspace,
   ClaudePrompt,
+  FirstTry,
   SkillsFirst,
   SkillInvoke,
   SkillDocs,
