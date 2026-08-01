@@ -1,6 +1,6 @@
 import React from 'react';
 import type { DesignSystem, Page, SlideMeta, SlideTransition } from '@open-slide/core';
-import { MorphElement, useIsActivePage } from '@open-slide/core';
+import { MorphElement, Step, Steps, useIsActivePage } from '@open-slide/core';
 import avatar from '@assets/avatar.jpg';
 import geistFont from '@assets/geist.woff2';
 import geistMonoFont from '@assets/geist-mono.woff2';
@@ -2207,23 +2207,32 @@ const ClaudePrompt: Page = () => {
 // `morphId` pairs a row across pages (18 → 19: index.tsx flies into the
 // editor tab). The morph node is the inner icon+name row — the depth
 // padding stays on the wrapper so the clone doesn't stretch in flight.
+type TreeTone = 'hi' | 'base' | 'lo';
+
 const TreeRow = ({
   depth,
   name,
   folder = false,
-  bright = false,
-  delay,
-  animate,
+  tone = 'base',
+  delay = 0,
+  animate = false,
   morphId,
 }: {
   depth: number;
   name: string;
   folder?: boolean;
-  bright?: boolean;
-  delay: number;
-  animate: boolean;
+  tone?: TreeTone;
+  delay?: number;
+  animate?: boolean;
   morphId?: string;
 }) => {
+  const iconColor = tone === 'hi' ? wireBright : tone === 'lo' ? 'rgba(255, 255, 255, 0.10)' : wire;
+  const textColor =
+    tone === 'hi'
+      ? 'var(--osd-text)'
+      : tone === 'lo'
+        ? 'rgba(245, 245, 247, 0.22)'
+        : 'rgba(245, 245, 247, 0.72)';
   const row = (
     // fit-content keeps the morph rect hugging the icon+name, so the 18 → 19
     // glide is a pure translate instead of a horizontal squash.
@@ -2233,7 +2242,7 @@ const TreeRow = ({
           <path
             d="M3 7 a2 2 0 0 1 2-2 h4.5 l2 2.5 H19 a2 2 0 0 1 2 2 V17 a2 2 0 0 1-2 2 H5 a2 2 0 0 1-2-2 Z"
             fill="none"
-            stroke={bright ? wireBright : wire}
+            stroke={iconColor}
             strokeWidth={1.8}
             strokeLinejoin="round"
           />
@@ -2243,18 +2252,18 @@ const TreeRow = ({
           <path
             d="M6 3 h8 l4 4 v13 a1 1 0 0 1-1 1 H7 a1 1 0 0 1-1-1 Z"
             fill="none"
-            stroke={bright ? wireBright : wire}
+            stroke={iconColor}
             strokeWidth={1.8}
             strokeLinejoin="round"
           />
-          <path d="M14 3 v4 h4" fill="none" stroke={bright ? wireBright : wire} strokeWidth={1.8} strokeLinejoin="round" />
+          <path d="M14 3 v4 h4" fill="none" stroke={iconColor} strokeWidth={1.8} strokeLinejoin="round" />
         </svg>
       )}
       <div
         style={{
           fontFamily: monoFont,
           fontSize: 21,
-          color: bright ? 'var(--osd-text)' : 'rgba(245, 245, 247, 0.72)',
+          color: textColor,
         }}
       >
         {name}
@@ -2270,6 +2279,56 @@ const TreeRow = ({
     </div>
   );
 };
+
+// The whole generated tree, with an optional spotlight group: the
+// highlighted directory's rows go bright, everything else dims. Each
+// <Step> stacks an opaque copy with the next spotlight over the base.
+type TreeSpot = 'slides' | 'components' | 'lib' | 'app' | null;
+
+const FileTree = ({
+  spot,
+  animate = false,
+  morph = false,
+}: {
+  spot: TreeSpot;
+  animate?: boolean;
+  morph?: boolean;
+}) => {
+  const g = (group: Exclude<TreeSpot, null>): TreeTone =>
+    spot === null ? 'base' : spot === group ? 'hi' : 'lo';
+  // src stays readable as context while one of its subfolders is lit.
+  const srcTone: TreeTone = spot === null ? 'base' : spot === 'slides' ? 'lo' : 'base';
+  const idxTone: TreeTone = spot === null || spot === 'slides' ? 'hi' : 'lo';
+  const d = (i: number) => 350 + i * 40;
+
+  return (
+    <div>
+      <TreeRow depth={0} name="slides" folder tone={g('slides')} delay={d(0)} animate={animate} />
+      <TreeRow depth={1} name="example-deck" folder tone={g('slides')} delay={d(1)} animate={animate} />
+      <TreeRow depth={2} name="index.tsx" tone={idxTone} delay={d(2)} animate={animate} morphId={morph ? 'index-file' : undefined} />
+      <TreeRow depth={0} name="src" folder tone={srcTone} delay={d(3)} animate={animate} />
+      <TreeRow depth={1} name="components" folder tone={g('components')} delay={d(4)} animate={animate} />
+      <TreeRow depth={2} name="Player.tsx" tone={g('components')} delay={d(5)} animate={animate} />
+      <TreeRow depth={2} name="SlideCanvas.tsx" tone={g('components')} delay={d(6)} animate={animate} />
+      <TreeRow depth={2} name="ThumbnailRail.tsx" tone={g('components')} delay={d(7)} animate={animate} />
+      <TreeRow depth={1} name="lib" folder tone={g('lib')} delay={d(8)} animate={animate} />
+      <TreeRow depth={2} name="decks.ts" tone={g('lib')} delay={d(9)} animate={animate} />
+      <TreeRow depth={2} name="sdk.ts" tone={g('lib')} delay={d(10)} animate={animate} />
+      <TreeRow depth={1} name="routes" folder tone={g('app')} delay={d(11)} animate={animate} />
+      <TreeRow depth={2} name="Deck.tsx" tone={g('app')} delay={d(12)} animate={animate} />
+      <TreeRow depth={2} name="Home.tsx" tone={g('app')} delay={d(13)} animate={animate} />
+      <TreeRow depth={1} name="App.tsx" tone={g('app')} delay={d(14)} animate={animate} />
+      <TreeRow depth={1} name="main.tsx" tone={g('app')} delay={d(15)} animate={animate} />
+      <TreeRow depth={1} name="styles.css" tone={g('app')} delay={d(16)} animate={animate} />
+    </div>
+  );
+};
+
+const treeOverlay = {
+  position: 'absolute',
+  inset: 0,
+  background: 'var(--osd-bg)',
+} as const;
 
 const FirstTry: Page = () => {
   const animate = useIsActivePage();
@@ -2320,24 +2379,38 @@ const FirstTry: Page = () => {
           />
         </div>
 
-        <div>
-          <TreeRow depth={0} name="slides" folder delay={350} animate={animate} />
-          <TreeRow depth={1} name="example-deck" folder delay={390} animate={animate} />
-          <TreeRow depth={2} name="index.tsx" bright delay={430} animate={animate} morphId="index-file" />
-          <TreeRow depth={0} name="src" folder delay={510} animate={animate} />
-          <TreeRow depth={1} name="components" folder delay={550} animate={animate} />
-          <TreeRow depth={2} name="Player.tsx" delay={590} animate={animate} />
-          <TreeRow depth={2} name="SlideCanvas.tsx" delay={630} animate={animate} />
-          <TreeRow depth={2} name="ThumbnailRail.tsx" delay={670} animate={animate} />
-          <TreeRow depth={1} name="lib" folder delay={710} animate={animate} />
-          <TreeRow depth={2} name="decks.ts" delay={750} animate={animate} />
-          <TreeRow depth={2} name="sdk.ts" delay={790} animate={animate} />
-          <TreeRow depth={1} name="routes" folder delay={830} animate={animate} />
-          <TreeRow depth={2} name="Deck.tsx" delay={870} animate={animate} />
-          <TreeRow depth={2} name="Home.tsx" delay={910} animate={animate} />
-          <TreeRow depth={1} name="App.tsx" delay={950} animate={animate} />
-          <TreeRow depth={1} name="main.tsx" delay={990} animate={animate} />
-          <TreeRow depth={1} name="styles.css" delay={1030} animate={animate} />
+        {/* Spotlight walkthrough: each → lights up one directory group,
+            dimming the rest; the last step settles back to the full tree
+            (which also carries the index.tsx morph into page 19). */}
+        <div style={{ position: 'relative' }}>
+          <Steps>
+            <FileTree spot={null} animate={animate} />
+            <Step duration={240}>
+              <div style={treeOverlay}>
+                <FileTree spot="slides" />
+              </div>
+            </Step>
+            <Step duration={240}>
+              <div style={treeOverlay}>
+                <FileTree spot="components" />
+              </div>
+            </Step>
+            <Step duration={240}>
+              <div style={treeOverlay}>
+                <FileTree spot="lib" />
+              </div>
+            </Step>
+            <Step duration={240}>
+              <div style={treeOverlay}>
+                <FileTree spot="app" />
+              </div>
+            </Step>
+            <Step duration={240}>
+              <div style={treeOverlay}>
+                <FileTree spot={null} morph />
+              </div>
+            </Step>
+          </Steps>
         </div>
       </div>
     </div>
@@ -2444,7 +2517,7 @@ const IndexSource: Page = () => {
               background: 'rgba(255, 255, 255, 0.06)',
             }}
           >
-            <TreeRow depth={0} name="index.tsx" bright delay={0} animate={false} morphId="index-file" />
+            <TreeRow depth={0} name="index.tsx" tone="hi" delay={0} animate={false} morphId="index-file" />
           </div>
           <div style={{ marginLeft: 'auto', fontFamily: monoFont, fontSize: 20, color: muted }}>
             slides/example-deck
