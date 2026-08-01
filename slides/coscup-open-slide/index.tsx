@@ -2204,6 +2204,9 @@ const ClaudePrompt: Page = () => {
 
 // Page 18 — the first try: what Claude produced, and the project
 // structure it generated, as a designed file tree (no raw ASCII).
+// `morphId` pairs a row across pages (18 → 19: index.tsx flies into the
+// editor tab). The morph node is the inner icon+name row — the depth
+// padding stays on the wrapper so the clone doesn't stretch in flight.
 const TreeRow = ({
   depth,
   name,
@@ -2211,6 +2214,7 @@ const TreeRow = ({
   bright = false,
   delay,
   animate,
+  morphId,
 }: {
   depth: number;
   name: string;
@@ -2218,51 +2222,54 @@ const TreeRow = ({
   bright?: boolean;
   delay: number;
   animate: boolean;
-}) => (
-  <div
-    className={animate ? 'coscup-fade' : undefined}
-    style={{
-      display: 'flex',
-      alignItems: 'center',
-      gap: 14,
-      height: 34,
-      paddingLeft: depth * 36,
-      animationDelay: `${delay}ms`,
-    }}
-  >
-    {folder ? (
-      <svg width={21} height={21} viewBox="0 0 24 24" style={{ flexShrink: 0 }}>
-        <path
-          d="M3 7 a2 2 0 0 1 2-2 h4.5 l2 2.5 H19 a2 2 0 0 1 2 2 V17 a2 2 0 0 1-2 2 H5 a2 2 0 0 1-2-2 Z"
-          fill="none"
-          stroke={bright ? wireBright : wire}
-          strokeWidth={1.8}
-          strokeLinejoin="round"
-        />
-      </svg>
-    ) : (
-      <svg width={21} height={21} viewBox="0 0 24 24" style={{ flexShrink: 0 }}>
-        <path
-          d="M6 3 h8 l4 4 v13 a1 1 0 0 1-1 1 H7 a1 1 0 0 1-1-1 Z"
-          fill="none"
-          stroke={bright ? wireBright : wire}
-          strokeWidth={1.8}
-          strokeLinejoin="round"
-        />
-        <path d="M14 3 v4 h4" fill="none" stroke={bright ? wireBright : wire} strokeWidth={1.8} strokeLinejoin="round" />
-      </svg>
-    )}
-    <div
-      style={{
-        fontFamily: monoFont,
-        fontSize: 21,
-        color: bright ? 'var(--osd-text)' : 'rgba(245, 245, 247, 0.72)',
-      }}
-    >
-      {name}
+  morphId?: string;
+}) => {
+  const row = (
+    // fit-content keeps the morph rect hugging the icon+name, so the 18 → 19
+    // glide is a pure translate instead of a horizontal squash.
+    <div style={{ display: 'flex', alignItems: 'center', gap: 14, height: 34, width: 'fit-content' }}>
+      {folder ? (
+        <svg width={21} height={21} viewBox="0 0 24 24" style={{ flexShrink: 0 }}>
+          <path
+            d="M3 7 a2 2 0 0 1 2-2 h4.5 l2 2.5 H19 a2 2 0 0 1 2 2 V17 a2 2 0 0 1-2 2 H5 a2 2 0 0 1-2-2 Z"
+            fill="none"
+            stroke={bright ? wireBright : wire}
+            strokeWidth={1.8}
+            strokeLinejoin="round"
+          />
+        </svg>
+      ) : (
+        <svg width={21} height={21} viewBox="0 0 24 24" style={{ flexShrink: 0 }}>
+          <path
+            d="M6 3 h8 l4 4 v13 a1 1 0 0 1-1 1 H7 a1 1 0 0 1-1-1 Z"
+            fill="none"
+            stroke={bright ? wireBright : wire}
+            strokeWidth={1.8}
+            strokeLinejoin="round"
+          />
+          <path d="M14 3 v4 h4" fill="none" stroke={bright ? wireBright : wire} strokeWidth={1.8} strokeLinejoin="round" />
+        </svg>
+      )}
+      <div
+        style={{
+          fontFamily: monoFont,
+          fontSize: 21,
+          color: bright ? 'var(--osd-text)' : 'rgba(245, 245, 247, 0.72)',
+        }}
+      >
+        {name}
+      </div>
     </div>
-  </div>
-);
+  );
+  return (
+    <div
+      className={animate ? 'coscup-fade' : undefined}
+      style={{ paddingLeft: depth * 36, animationDelay: `${delay}ms` }}
+    >
+      {morphId ? <MorphElement id={morphId}>{row}</MorphElement> : row}
+    </div>
+  );
+};
 
 const FirstTry: Page = () => {
   const animate = useIsActivePage();
@@ -2316,7 +2323,7 @@ const FirstTry: Page = () => {
         <div>
           <TreeRow depth={0} name="slides" folder delay={350} animate={animate} />
           <TreeRow depth={1} name="example-deck" folder delay={390} animate={animate} />
-          <TreeRow depth={2} name="index.tsx" bright delay={430} animate={animate} />
+          <TreeRow depth={2} name="index.tsx" bright delay={430} animate={animate} morphId="index-file" />
           <TreeRow depth={0} name="src" folder delay={510} animate={animate} />
           <TreeRow depth={1} name="components" folder delay={550} animate={animate} />
           <TreeRow depth={2} name="Player.tsx" delay={590} animate={animate} />
@@ -2337,7 +2344,151 @@ const FirstTry: Page = () => {
   );
 };
 
-// One bundled-skill document card. `morphId` pairs it across pages 18/19;
+// Code tokens for the index.tsx snippet — keywords in accent blue,
+// punctuation muted, everything else default text.
+const Kw = ({ children }: { children: React.ReactNode }) => (
+  <span style={{ color: 'var(--osd-accent)' }}>{children}</span>
+);
+const Punc = ({ children }: { children: React.ReactNode }) => (
+  <span style={{ color: muted }}>{children}</span>
+);
+const Strg = ({ children }: { children: React.ReactNode }) => (
+  <span style={{ color: 'rgba(245, 245, 247, 0.72)' }}>{children}</span>
+);
+const Dots = () => <span style={{ color: muted }}>…</span>;
+
+const CodeLine = ({
+  delay,
+  animate,
+  children,
+}: {
+  delay: number;
+  animate: boolean;
+  children: React.ReactNode;
+}) => (
+  <div
+    className={animate ? 'coscup-fade' : undefined}
+    style={{ height: 48, whiteSpace: 'pre', animationDelay: `${delay}ms` }}
+  >
+    {children}
+  </div>
+);
+
+// Page 19 — index.tsx up close: the whole deck contract in a dozen lines.
+// The file glides out of page 18's tree into this editor tab (morph);
+// entrances here are opacity-only so the clone owns all the motion, and
+// the code lines cascade in only after the tab has landed (MORPH_MS).
+const IndexSource: Page = () => {
+  const animate = useIsActivePage();
+  const line = (i: number) => MORPH_MS + 150 + i * 90;
+
+  return (
+    <div
+      style={{
+        ...fill,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 48,
+      }}
+    >
+      <style>{entranceCss}</style>
+
+      <div
+        className={animate ? 'coscup-fade' : undefined}
+        style={{
+          fontSize: 26,
+          fontWeight: 600,
+          letterSpacing: '0.28em',
+          color: muted,
+          animationDelay: '0ms',
+        }}
+      >
+        JUST REACT COMPONENTS
+      </div>
+
+      {/* No entrance animation here — this window is an ancestor of the
+          morph target (the index.tsx tab), and the runtime interpolates the
+          clone's opacity toward the target's effective (ancestor-multiplied)
+          opacity at cut time. A fade here would make the clone fade out in
+          flight; the page-level enter fade already covers the reveal. */}
+      <div
+        style={{
+          width: 1240,
+          border: `2px solid ${wire}`,
+          borderRadius: 24,
+          background: '#111114',
+          overflow: 'hidden',
+        }}
+      >
+        {/* Editor chrome — the tab is the morph landing spot. */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 11,
+            height: 64,
+            padding: '0 24px',
+            borderBottom: `2px solid ${wireDim}`,
+          }}
+        >
+          <div style={{ width: 14, height: 14, borderRadius: '50%', background: 'rgba(255, 255, 255, 0.22)' }} />
+          <div style={{ width: 14, height: 14, borderRadius: '50%', background: 'rgba(255, 255, 255, 0.22)' }} />
+          <div style={{ width: 14, height: 14, borderRadius: '50%', background: 'rgba(255, 255, 255, 0.22)' }} />
+          <div
+            style={{
+              marginLeft: 18,
+              padding: '6px 22px',
+              borderRadius: 10,
+              background: 'rgba(255, 255, 255, 0.06)',
+            }}
+          >
+            <TreeRow depth={0} name="index.tsx" bright delay={0} animate={false} morphId="index-file" />
+          </div>
+          <div style={{ marginLeft: 'auto', fontFamily: monoFont, fontSize: 20, color: muted }}>
+            slides/example-deck
+          </div>
+        </div>
+
+        <div
+          style={{
+            padding: '40px 56px',
+            fontFamily: monoFont,
+            fontSize: 26,
+            color: 'var(--osd-text)',
+          }}
+        >
+          <CodeLine delay={line(0)} animate={animate}>
+            <Kw>import type</Kw> <Punc>{'{'}</Punc> DeckMeta<Punc>,</Punc> SlidePage <Punc>{'}'}</Punc> <Kw>from</Kw> <Strg>'../../src/lib/sdk'</Strg><Punc>;</Punc>
+          </CodeLine>
+          <div style={{ height: 22 }} />
+          <CodeLine delay={line(1)} animate={animate}>
+            <Kw>const</Kw> Title<Punc>:</Punc> SlidePage <Punc>{'= () => ('}</Punc> <Dots /> <Punc>{');'}</Punc>
+          </CodeLine>
+          <div style={{ height: 22 }} />
+          <CodeLine delay={line(2)} animate={animate}>
+            <Kw>const</Kw> Contract<Punc>:</Punc> SlidePage <Punc>{'= () => ('}</Punc> <Dots /> <Punc>{');'}</Punc>
+          </CodeLine>
+          <div style={{ height: 22 }} />
+          <CodeLine delay={line(3)} animate={animate}>
+            <Kw>const</Kw> Closing<Punc>:</Punc> SlidePage <Punc>{'= () => ('}</Punc> <Dots /> <Punc>{');'}</Punc>
+          </CodeLine>
+          <div style={{ height: 22 }} />
+          <CodeLine delay={line(4)} animate={animate}>
+            <Kw>export const</Kw> meta<Punc>:</Punc> DeckMeta <Punc>{'= {'}</Punc> title<Punc>:</Punc> <Strg>'Example deck'</Strg> <Punc>{'};'}</Punc>
+          </CodeLine>
+          <div style={{ height: 22 }} />
+          <CodeLine delay={line(5)} animate={animate}>
+            <Kw>export default</Kw> <Punc>[</Punc>Title<Punc>,</Punc> Contract<Punc>,</Punc> Closing<Punc>]</Punc> <Kw>satisfies</Kw> SlidePage<Punc>[];</Punc>
+          </CodeLine>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// One bundled-skill document card. `morphId` pairs it across pages 20/21;
 // `dim` mutes everything but the featured skill.
 const SkillCard = ({
   name,
@@ -2387,7 +2538,7 @@ const SkillCard = ({
   return morphId ? <MorphElement id={morphId}>{card}</MorphElement> : card;
 };
 
-// Page 18 — the framework is designed for agents, so it's skills-first:
+// Page 20 — the framework is designed for agents, so it's skills-first:
 // skills ship with the project, an updater keeps them fresh, and every
 // primitive is documented as a skill.
 const SPIN_CSS = `
@@ -2492,7 +2643,7 @@ const SkillsFirst: Page = () => {
   );
 };
 
-// Page 19 — the cards glide left (create-slide stays lit), and a Claude
+// Page 21 — the cards glide left (create-slide stays lit), and a Claude
 // Code session shows /create-slide being invoked with a prompt.
 const MORPH_MS = 868;
 const INVOKE_PROMPT = '幫我做一份「深入淺出 Kubernetes」的分享簡報，聽眾是後端工程師，10 頁以內，風格簡潔、深色系';
@@ -2671,7 +2822,7 @@ const DocCard = ({ name, delay, animate }: { name: string; delay: number; animat
   </div>
 );
 
-// Page 20 — the highlight morphs down to slide-authoring, which unfolds
+// Page 22 — the highlight morphs down to slide-authoring, which unfolds
 // into its real primitive reference docs.
 const SkillDocs: Page = () => {
   const animate = useIsActivePage();
@@ -2724,7 +2875,7 @@ const SkillDocs: Page = () => {
   );
 };
 
-// Page 21 — apply-comments in action: the cursor pins a comment on a
+// Page 23 — apply-comments in action: the cursor pins a comment on a
 // slide element, Claude Code runs the skill, and the agent's edit lands
 // with the comment dissolving away.
 const APPLY_CSS = `
@@ -3039,7 +3190,7 @@ const ApplyDemo: Page = () => {
   );
 };
 
-// Page 22 — LIVE DEMO. Terminal decode: glyphs churn and lock in one by
+// Page 24 — LIVE DEMO. Terminal decode: glyphs churn and lock in one by
 // one, left to right, then a block cursor keeps blinking until the
 // screen switch.
 const DEMO_TEXT = 'Live Demo';
@@ -3122,8 +3273,9 @@ const LiveDemo: Page = () => {
   );
 };
 
-// Shared morph transition for the 18 → 19 cut (both directions):
-// opacity-only fades so the gliding clones carry all the motion.
+// Shared morph transition — the 18 → 19 file-to-tab cut and the
+// 20 → 23 skill-rail cuts. Opacity-only fades so the gliding clones
+// carry all the motion.
 const morphTransition: SlideTransition = {
   duration: 280,
   exit: {
@@ -3139,11 +3291,13 @@ const morphTransition: SlideTransition = {
   },
   morph: { duration: MORPH_MS, easing: 'cubic-bezier(0.4, 0, 0.2, 1)' },
 };
+IndexSource.transition = morphTransition;
 SkillInvoke.transition = morphTransition;
 SkillDocs.transition = morphTransition;
 ApplyDemo.transition = morphTransition;
-// Entering page 18 (and stepping back 19 → 18) stays a quiet dissolve —
-// no morph flag, so the unmatched ids at the 17 → 18 cut don't double-animate.
+// Entering SkillsFirst (page 20, and stepping back 21 → 20) stays a quiet
+// dissolve — no morph flag, so the unmatched ids at the 19 → 20 cut don't
+// double-animate.
 SkillsFirst.transition = {
   duration: 280,
   exit: {
@@ -3226,6 +3380,7 @@ export default [
   OneWorkspace,
   ClaudePrompt,
   FirstTry,
+  IndexSource,
   SkillsFirst,
   SkillInvoke,
   SkillDocs,
