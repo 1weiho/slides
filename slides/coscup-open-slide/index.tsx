@@ -1,6 +1,6 @@
 import React from 'react';
 import type { DesignSystem, Page, SlideMeta, SlideTransition } from '@open-slide/core';
-import { useIsActivePage } from '@open-slide/core';
+import { MorphElement, useIsActivePage } from '@open-slide/core';
 import avatar from '@assets/avatar.jpg';
 import geistFont from '@assets/geist.woff2';
 import geistMonoFont from '@assets/geist-mono.woff2';
@@ -2201,29 +2201,55 @@ const ClaudePrompt: Page = () => {
   );
 };
 
-// One bundled-skill document card.
-const SkillCard = ({ name, delay, animate }: { name: string; delay: number; animate: boolean }) => (
-  <div
-    className={animate ? 'coscup-rise' : undefined}
-    style={{
-      width: 300,
-      height: 210,
-      border: `2px solid ${wire}`,
-      borderRadius: 16,
-      padding: '28px 30px',
-      display: 'flex',
-      flexDirection: 'column',
-      gap: 13,
-      animationDelay: `${delay}ms`,
-    }}
-  >
-    <div style={{ fontFamily: monoFont, fontSize: 22, color: 'var(--osd-text)' }}>{name}</div>
-    <div style={{ width: '88%', height: 11, borderRadius: 4, background: wireDim, marginTop: 8 }} />
-    <div style={{ width: '72%', height: 11, borderRadius: 4, background: wireDim }} />
-    <div style={{ width: '80%', height: 11, borderRadius: 4, background: wireDim }} />
-    <div style={{ width: '56%', height: 11, borderRadius: 4, background: wireDim }} />
-  </div>
-);
+// One bundled-skill document card. `morphId` pairs it across pages 18/19;
+// `dim` mutes everything but the featured skill.
+const SkillCard = ({
+  name,
+  delay,
+  animate,
+  dim = false,
+  morphId,
+}: {
+  name: string;
+  delay: number;
+  animate: boolean;
+  dim?: boolean;
+  morphId?: string;
+}) => {
+  const lineBg = dim ? 'rgba(255, 255, 255, 0.05)' : wireDim;
+  const card = (
+    <div
+      className={animate ? 'coscup-rise' : undefined}
+      style={{
+        width: 300,
+        height: 210,
+        border: `2px solid ${dim ? wireDim : wire}`,
+        borderRadius: 16,
+        padding: '28px 30px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 13,
+        animationDelay: `${delay}ms`,
+      }}
+    >
+      <div
+        style={{
+          fontFamily: monoFont,
+          fontSize: 22,
+          color: dim ? 'rgba(255, 255, 255, 0.35)' : 'var(--osd-text)',
+          textAlign: 'center',
+        }}
+      >
+        {name}
+      </div>
+      <div style={{ width: '88%', height: 11, borderRadius: 4, background: lineBg, marginTop: 8 }} />
+      <div style={{ width: '72%', height: 11, borderRadius: 4, background: lineBg }} />
+      <div style={{ width: '80%', height: 11, borderRadius: 4, background: lineBg }} />
+      <div style={{ width: '56%', height: 11, borderRadius: 4, background: lineBg }} />
+    </div>
+  );
+  return morphId ? <MorphElement id={morphId}>{card}</MorphElement> : card;
+};
 
 // Page 18 — the framework is designed for agents, so it's skills-first:
 // skills ship with the project, an updater keeps them fresh, and every
@@ -2288,9 +2314,9 @@ const SkillsFirst: Page = () => {
       </h2>
 
       <div style={{ display: 'flex', gap: 44, marginTop: 72 }}>
-        <SkillCard name="create-slide" delay={450} animate={animate} />
-        <SkillCard name="slide-authoring" delay={600} animate={animate} />
-        <SkillCard name="apply-comments" delay={750} animate={animate} />
+        <SkillCard name="create-slide" delay={450} animate={animate} morphId="skill-create-slide" />
+        <SkillCard name="slide-authoring" delay={600} animate={animate} morphId="skill-slide-authoring" />
+        <SkillCard name="apply-comments" delay={750} animate={animate} morphId="skill-apply-comments" />
       </div>
 
       <div
@@ -2328,6 +2354,568 @@ const SkillsFirst: Page = () => {
       </div>
     </div>
   );
+};
+
+// Page 19 — the cards glide left (create-slide stays lit), and a Claude
+// Code session shows /create-slide being invoked with a prompt.
+const MORPH_MS = 868;
+const INVOKE_PROMPT = '幫我做一份「深入淺出 Kubernetes」的分享簡報，聽眾是後端工程師，10 頁以內，風格簡潔、深色系';
+
+const SkillInvoke: Page = () => {
+  const animate = useIsActivePage();
+  const [typed, setTyped] = React.useState(animate ? 0 : INVOKE_PROMPT.length);
+
+  React.useEffect(() => {
+    if (!animate || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setTyped(INVOKE_PROMPT.length);
+      return;
+    }
+    setTyped(0);
+    let timer: ReturnType<typeof setInterval>;
+    const kickoff = setTimeout(() => {
+      timer = setInterval(() => {
+        setTyped((n) => {
+          if (n >= INVOKE_PROMPT.length) {
+            clearInterval(timer);
+            return n;
+          }
+          return n + 1;
+        });
+      }, 24);
+    }, MORPH_MS + 900);
+    return () => {
+      clearTimeout(kickoff);
+      clearInterval(timer);
+    };
+  }, [animate]);
+
+  return (
+    <div style={{ ...fill }}>
+      <style>{entranceCss}</style>
+      <style>{TYPE_CSS}</style>
+
+      {/* Skill rail — same cards, now stacked left; create-slide featured */}
+      <div
+        style={{
+          position: 'absolute',
+          left: 140,
+          top: 197,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 28,
+        }}
+      >
+        <SkillCard name="create-slide" delay={0} animate={false} morphId="skill-create-slide" />
+        <SkillCard name="slide-authoring" delay={0} animate={false} dim morphId="skill-slide-authoring" />
+        <SkillCard name="apply-comments" delay={0} animate={false} dim morphId="skill-apply-comments" />
+      </div>
+
+      {/* Claude Code session — revealed once the morph lands */}
+      <div
+        className={animate ? 'coscup-fade' : undefined}
+        style={{
+          position: 'absolute',
+          left: 560,
+          right: 140,
+          top: 197,
+          height: 686,
+          border: `2px solid ${wire}`,
+          borderRadius: 24,
+          background: '#111114',
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
+          animationDelay: `${MORPH_MS}ms`,
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 11,
+            height: 56,
+            padding: '0 24px',
+            borderBottom: `2px solid ${wireDim}`,
+            flexShrink: 0,
+          }}
+        >
+          <div style={{ width: 14, height: 14, borderRadius: '50%', background: 'rgba(255, 255, 255, 0.22)' }} />
+          <div style={{ width: 14, height: 14, borderRadius: '50%', background: 'rgba(255, 255, 255, 0.22)' }} />
+          <div style={{ width: 14, height: 14, borderRadius: '50%', background: 'rgba(255, 255, 255, 0.22)' }} />
+          <div
+            style={{
+              flex: 1,
+              textAlign: 'center',
+              marginRight: 64,
+              fontFamily: monoFont,
+              fontSize: 20,
+              color: muted,
+            }}
+          >
+            claude
+          </div>
+        </div>
+
+        <div style={{ flex: 1, padding: 32, display: 'flex', flexDirection: 'column', gap: 24 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <img src={claudeIcon} alt="Claude" style={{ width: 36, height: 36 }} />
+            <div style={{ fontFamily: monoFont, fontSize: 22, color: 'var(--osd-text)', fontWeight: 500 }}>
+              Claude Code
+            </div>
+          </div>
+
+          <div
+            style={{
+              flex: 1,
+              border: `2px solid ${wire}`,
+              borderRadius: 16,
+              padding: '24px 28px',
+              fontFamily: monoFont,
+              fontSize: 22,
+              lineHeight: 1.8,
+              color: 'var(--osd-text)',
+              whiteSpace: 'pre-wrap',
+            }}
+          >
+            <span style={{ color: muted }}>{'> '}</span>
+            <span
+              style={{
+                display: 'inline-block',
+                padding: '2px 14px',
+                borderRadius: 8,
+                background: 'rgba(255, 255, 255, 0.12)',
+                color: 'var(--osd-text)',
+              }}
+            >
+              /create-slide
+            </span>{' '}
+            {INVOKE_PROMPT.slice(0, typed)}
+            {animate && (
+              <span
+                className="coscup-blink"
+                style={{
+                  display: 'inline-block',
+                  width: 12,
+                  height: 26,
+                  background: wireBright,
+                  verticalAlign: '-4px',
+                }}
+              />
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// One primitive reference doc inside the slide-authoring skill.
+const DocCard = ({ name, delay, animate }: { name: string; delay: number; animate: boolean }) => (
+  <div
+    className={animate ? 'coscup-settle' : undefined}
+    style={
+      {
+        width: 300,
+        height: 150,
+        border: `2px solid ${wire}`,
+        borderRadius: 14,
+        padding: '22px 26px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 11,
+        '--sx': '-60px',
+        animationDelay: `${delay}ms`,
+      } as React.CSSProperties
+    }
+  >
+    <div style={{ fontFamily: monoFont, fontSize: 19, color: 'var(--osd-text)' }}>{name}</div>
+    <div style={{ width: '82%', height: 9, borderRadius: 4, background: wireDim, marginTop: 6 }} />
+    <div style={{ width: '64%', height: 9, borderRadius: 4, background: wireDim }} />
+    <div style={{ width: '72%', height: 9, borderRadius: 4, background: wireDim }} />
+  </div>
+);
+
+// Page 20 — the highlight morphs down to slide-authoring, which unfolds
+// into its real primitive reference docs.
+const SkillDocs: Page = () => {
+  const animate = useIsActivePage();
+  const doc = (i: number) => MORPH_MS + 150 + i * 110;
+
+  return (
+    <div style={{ ...fill }}>
+      <style>{entranceCss}</style>
+
+      {/* Same rail — slide-authoring takes the light */}
+      <div
+        style={{
+          position: 'absolute',
+          left: 140,
+          top: 197,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 28,
+        }}
+      >
+        <SkillCard name="create-slide" delay={0} animate={false} dim morphId="skill-create-slide" />
+        <SkillCard name="slide-authoring" delay={0} animate={false} morphId="skill-slide-authoring" />
+        <SkillCard name="apply-comments" delay={0} animate={false} dim morphId="skill-apply-comments" />
+      </div>
+
+      {/* Its reference docs emanate to the right */}
+      <div
+        style={{
+          position: 'absolute',
+          left: 560,
+          right: 140,
+          top: 197,
+          height: 686,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 300px)', gap: 32 }}>
+          <DocCard name="design-system.md" delay={doc(0)} animate={animate} />
+          <DocCard name="assets.md" delay={doc(1)} animate={animate} />
+          <DocCard name="webfonts.md" delay={doc(2)} animate={animate} />
+          <DocCard name="steps.md" delay={doc(3)} animate={animate} />
+          <DocCard name="transitions.md" delay={doc(4)} animate={animate} />
+          <DocCard name="morph.md" delay={doc(5)} animate={animate} />
+          <DocCard name="page-numbers.md" delay={doc(6)} animate={animate} />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Page 21 — apply-comments in action: the cursor pins a comment on a
+// slide element, Claude Code runs the skill, and the agent's edit lands
+// with the comment dissolving away.
+const APPLY_CSS = `
+@keyframes coscup-cursor-in {
+  0%   { opacity: 0; transform: translate(420px, 300px); }
+  20%  { opacity: 1; }
+  100% { opacity: 1; transform: translate(0, 0); }
+}
+@keyframes coscup-click {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(0.82); }
+  100% { transform: scale(1); }
+}
+@keyframes coscup-pop {
+  0%   { opacity: 0; transform: scale(0.4); }
+  65%  { opacity: 1; transform: scale(1.1); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@keyframes coscup-pop-out {
+  from { opacity: 1; transform: scale(1); }
+  to   { opacity: 0; transform: scale(0.55); }
+}
+@keyframes coscup-bubble-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.88); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes coscup-title-grow {
+  from { top: 56px; width: 320px; height: 30px; border-radius: 8px; background: rgba(255, 255, 255, 0.30); }
+  to   { top: 48px; width: 480px; height: 46px; border-radius: 10px; background: rgba(255, 255, 255, 0.55); }
+}
+@keyframes coscup-ring {
+  0%   { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+  35%  { box-shadow: 0 0 0 14px rgba(255, 255, 255, 0.12); }
+  100% { box-shadow: 0 0 0 24px rgba(255, 255, 255, 0); }
+}
+`;
+
+const APPLY_COMMENT = '這個標題再大一點';
+
+const ApplyDemo: Page = () => {
+  const animate = useIsActivePage();
+  const play =
+    animate &&
+    (typeof window === 'undefined' ||
+      !window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  const [typed, setTyped] = React.useState(play ? 0 : APPLY_COMMENT.length);
+
+  React.useEffect(() => {
+    if (!play) {
+      setTyped(APPLY_COMMENT.length);
+      return;
+    }
+    setTyped(0);
+    let timer: ReturnType<typeof setInterval>;
+    const kickoff = setTimeout(() => {
+      timer = setInterval(() => {
+        setTyped((n) => {
+          if (n >= APPLY_COMMENT.length) {
+            clearInterval(timer);
+            return n;
+          }
+          return n + 1;
+        });
+      }, 55);
+    }, 2700);
+    return () => {
+      clearTimeout(kickoff);
+      clearInterval(timer);
+    };
+  }, [play]);
+
+  const appear = (delay: number) =>
+    play ? { animation: `coscup-fade 600ms ${EASE_OUT} ${delay}ms both` } : undefined;
+
+  return (
+    <div style={{ ...fill }}>
+      <style>{entranceCss}</style>
+      <style>{APPLY_CSS}</style>
+      <style>{TYPE_CSS}</style>
+
+      {/* Same rail — apply-comments takes the light */}
+      <div
+        style={{
+          position: 'absolute',
+          left: 140,
+          top: 197,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 28,
+        }}
+      >
+        <SkillCard name="create-slide" delay={0} animate={false} dim morphId="skill-create-slide" />
+        <SkillCard name="slide-authoring" delay={0} animate={false} dim morphId="skill-slide-authoring" />
+        <SkillCard name="apply-comments" delay={0} animate={false} morphId="skill-apply-comments" />
+      </div>
+
+      <div
+        style={{
+          position: 'absolute',
+          left: 560,
+          right: 140,
+          top: 197,
+          height: 686,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 24,
+        }}
+      >
+        {/* The slide being reviewed */}
+        <div
+          className={play ? 'coscup-fade' : undefined}
+          style={{
+            position: 'relative',
+            width: 1000,
+            height: 420,
+            border: `2px solid ${wire}`,
+            borderRadius: 20,
+            animationDelay: `${MORPH_MS}ms`,
+          }}
+        >
+          {/* Title element — grows in place when the agent applies the edit */}
+          <div
+            style={{
+              position: 'absolute',
+              left: 64,
+              top: 48,
+              width: 480,
+              height: 46,
+              borderRadius: 10,
+              background: 'rgba(255, 255, 255, 0.55)',
+              ...(play
+                ? {
+                    animation: `coscup-title-grow 650ms ${EASE_ENTRANCE} 5200ms both, coscup-ring 900ms ${EASE_OUT} 5250ms both`,
+                  }
+                : {}),
+            }}
+          />
+          <div
+            style={{
+              position: 'absolute',
+              left: 64,
+              top: 132,
+              width: 560,
+              height: 16,
+              borderRadius: 6,
+              background: wireDim,
+            }}
+          />
+          <div
+            style={{
+              position: 'absolute',
+              left: 64,
+              top: 166,
+              width: 460,
+              height: 16,
+              borderRadius: 6,
+              background: wireDim,
+            }}
+          />
+
+          {/* Inspector cursor — glides in, clicks, gets out of the way */}
+          {play && (
+            <svg
+              width={26}
+              height={30}
+              viewBox="0 0 13 15"
+              style={{
+                position: 'absolute',
+                left: 402,
+                top: 46,
+                animation: `coscup-cursor-in 900ms ${EASE_ENTRANCE} 1000ms both, coscup-click 250ms ${EASE_OUT} 1950ms both, coscup-hide 350ms ${EASE_OUT} 2350ms forwards`,
+              }}
+            >
+              <path
+                d="M1 1 L1 11.5 L4 8.8 L5.9 13.4 L7.8 12.6 L5.9 8.1 L9.6 7.9 Z"
+                fill="#f5f5f7"
+                stroke="#000000"
+                strokeWidth={0.8}
+              />
+            </svg>
+          )}
+
+          {/* Comment pin — pops where the cursor clicked */}
+          <div
+            style={{
+              position: 'absolute',
+              left: 404,
+              top: 44,
+              width: 40,
+              height: 40,
+              borderRadius: '50% 50% 50% 6px',
+              border: `2px solid ${wireBright}`,
+              background: '#111114',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transformOrigin: 'bottom left',
+              ...(play
+                ? {
+                    animation: `coscup-pop 380ms ${EASE_ENTRANCE} 2150ms both, coscup-pop-out 380ms ${EASE_OUT} 5100ms forwards`,
+                  }
+                : { opacity: 0 }),
+            }}
+          >
+            <div style={{ width: 10, height: 10, borderRadius: '50%', background: wireBright }} />
+          </div>
+
+          {/* Comment bubble — springs from the pin, comment types out */}
+          <div
+            style={{
+              position: 'absolute',
+              left: 464,
+              top: 30,
+              width: 274,
+              height: 62,
+              padding: '14px 24px',
+              borderRadius: '16px 16px 16px 4px',
+              border: `2px solid ${wire}`,
+              background: '#111114',
+              fontSize: 24,
+              lineHeight: '34px',
+              color: 'var(--osd-text)',
+              whiteSpace: 'nowrap',
+              transformOrigin: 'left bottom',
+              ...(play
+                ? {
+                    animation: `coscup-bubble-in 420ms ${EASE_ENTRANCE} 2450ms both, coscup-pop-out 380ms ${EASE_OUT} 5100ms forwards`,
+                  }
+                : { opacity: 0 }),
+            }}
+          >
+            {APPLY_COMMENT.slice(0, typed)}
+          </div>
+        </div>
+
+        {/* Claude Code strip */}
+        <div
+          className={play ? 'coscup-fade' : undefined}
+          style={{
+            width: 1000,
+            border: `2px solid ${wire}`,
+            borderRadius: 16,
+            background: '#111114',
+            padding: '22px 28px',
+            fontFamily: monoFont,
+            fontSize: 22,
+            lineHeight: 1.9,
+            animationDelay: `${MORPH_MS}ms`,
+          }}
+        >
+          <div style={appear(3500)}>
+            <span style={{ color: muted }}>{'> '}</span>
+            <span
+              style={{
+                display: 'inline-block',
+                padding: '2px 14px',
+                borderRadius: 8,
+                background: 'rgba(255, 255, 255, 0.12)',
+                color: 'var(--osd-text)',
+              }}
+            >
+              /apply-comments
+            </span>
+          </div>
+          {/* Status line — applying… then done */}
+          <div style={{ position: 'relative', height: 42 }}>
+            <div
+              style={{
+                position: 'absolute',
+                inset: 0,
+                color: muted,
+                ...(play
+                  ? {
+                      animation: `coscup-fade 500ms ${EASE_OUT} 4000ms both, coscup-hide 300ms ${EASE_OUT} 4950ms forwards`,
+                    }
+                  : { opacity: 0 }),
+              }}
+            >
+              <span className="coscup-blink">⏺</span> Applying comment…
+            </div>
+            <div style={{ position: 'absolute', inset: 0, color: muted, ...appear(5000) }}>
+              ✓ 1 comment applied
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Shared morph transition for the 18 → 19 cut (both directions):
+// opacity-only fades so the gliding clones carry all the motion.
+const morphTransition: SlideTransition = {
+  duration: 280,
+  exit: {
+    duration: 224,
+    easing: EASE_IN,
+    keyframes: [{ opacity: 1 }, { opacity: 0 }],
+  },
+  enter: {
+    duration: 308,
+    delay: 112,
+    easing: EASE_OUT,
+    keyframes: [{ opacity: 0 }, { opacity: 1 }],
+  },
+  morph: { duration: MORPH_MS, easing: 'cubic-bezier(0.4, 0, 0.2, 1)' },
+};
+SkillInvoke.transition = morphTransition;
+SkillDocs.transition = morphTransition;
+ApplyDemo.transition = morphTransition;
+// Entering page 18 (and stepping back 19 → 18) stays a quiet dissolve —
+// no morph flag, so the unmatched ids at the 17 → 18 cut don't double-animate.
+SkillsFirst.transition = {
+  duration: 280,
+  exit: {
+    duration: 224,
+    easing: EASE_IN,
+    keyframes: [{ opacity: 1 }, { opacity: 0 }],
+  },
+  enter: {
+    duration: 308,
+    delay: 112,
+    easing: EASE_OUT,
+    keyframes: [{ opacity: 0 }, { opacity: 1 }],
+  },
 };
 
 // House transition — RISE. One motion DNA across the deck.
@@ -2397,4 +2985,7 @@ export default [
   OneWorkspace,
   ClaudePrompt,
   SkillsFirst,
+  SkillInvoke,
+  SkillDocs,
+  ApplyDemo,
 ] satisfies Page[];
