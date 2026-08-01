@@ -1,6 +1,6 @@
 import React from 'react';
 import type { DesignSystem, Page, SlideMeta, SlideTransition } from '@open-slide/core';
-import { MorphElement, Step, Steps, useIsActivePage } from '@open-slide/core';
+import { ImagePlaceholder, MorphElement, Step, Steps, useIsActivePage } from '@open-slide/core';
 import avatar from '@assets/avatar.jpg';
 import geistFont from '@assets/geist.woff2';
 import geistMonoFont from '@assets/geist-mono.woff2';
@@ -8,9 +8,11 @@ import openSlide from './assets/open-slide.png';
 import cursorMeetup from './assets/cursor-meetup.webp';
 import claudeIcon from './assets/claude-ai-icon.svg';
 import firstVersion from './assets/first-version.webp';
+import launchVideo from './assets/launch-video.webp';
+
 
 export const notes: (string | undefined)[] = [
-  undefined,
+  "https://coscup.org/2026/session/JTPCAZ",
   undefined,
   undefined,
   undefined,
@@ -3434,6 +3436,111 @@ export const meta: SlideMeta = {
   title: 'open-slide：從騎車時的靈感到衝上 GitHub Trending',
   createdAt: '2026-07-31T16:18:33.859Z',
 };
+// Page 25 — chapter turn: shipping the journey in the open.
+const BuildInPublic: Page = () => {
+  const animate = useIsActivePage();
+
+  return (
+    <div
+      style={{
+        ...fill,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      <style>{entranceCss}</style>
+      <h2
+        className={animate ? 'coscup-rise' : undefined}
+        style={{
+          fontFamily: 'var(--osd-font-display)',
+          fontSize: 150,
+          fontWeight: 700,
+          letterSpacing: '-0.02em',
+          lineHeight: 1.1,
+          margin: 0,
+          color: 'var(--osd-text)',
+          animationDelay: '0ms',
+        }}
+      >
+        Build in Public
+      </h2>
+    </div>
+  );
+};
+
+// Page 26 — the launch tweet, recreated as a native card (self-contained,
+// no external embed script).
+const LaunchTweet: Page = () => {
+  const animate = useIsActivePage();
+
+  return (
+    <div
+      style={{
+        ...fill,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      <style>{entranceCss}</style>
+
+      <div
+        className={animate ? 'coscup-bloom' : undefined}
+        style={{
+          width: 860,
+          border: `2px solid ${wire}`,
+          borderRadius: 24,
+          background: '#111114',
+          padding: '36px 40px',
+          animationDelay: '100ms',
+        }}
+      >
+        {/* Header */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+          <div style={{ width: 64, height: 64, borderRadius: '50%', overflow: 'hidden', flexShrink: 0 }}>
+            <img src={avatar} alt="Yiwei Ho" style={{ width: 64, height: 64, objectFit: 'cover' }} />
+          </div>
+          <div>
+            <div style={{ fontSize: 28, fontWeight: 700, color: 'var(--osd-text)' }}>Yiwei Ho</div>
+            <div style={{ fontSize: 24, color: muted }}>@1weiho</div>
+          </div>
+          <svg width={30} height={30} viewBox="0 0 24 24" style={{ marginLeft: 'auto' }}>
+            <path
+              d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"
+              fill="rgba(245, 245, 247, 0.85)"
+            />
+          </svg>
+        </div>
+
+        {/* Body */}
+        <div style={{ marginTop: 24, fontSize: 28, lineHeight: 1.5, color: 'var(--osd-text)' }}>
+          <div>Introducing open-slide - The slide framework built for agents.</div>
+          <div style={{ marginTop: 20 }}>Prompt your agent, get a polished deck.</div>
+          <div style={{ marginTop: 20, fontFamily: monoFont, fontSize: 26 }}>
+            $ npx @open-slide/cli init
+          </div>
+          <div style={{ marginTop: 20 }}>👇</div>
+        </div>
+
+        {/* Media */}
+        <div
+          style={{
+            marginTop: 24,
+            borderRadius: 16,
+            overflow: 'hidden',
+            border: `1px solid ${wireDim}`,
+          }}
+        >
+          <img src={launchVideo} alt='推文附圖（launch demo 截圖）' style={{ width: 778, height: 420, objectFit: 'cover', objectPosition: '50% 50%' }} />
+        </div>
+
+        <div style={{ marginTop: 20, fontSize: 22, color: muted }}>9:41 AM · May 2, 2026</div>
+      </div>
+    </div>
+  );
+};
+
 export default [
   Cover,
   Logo,
@@ -3459,4 +3566,6 @@ export default [
   SkillDocs,
   ApplyDemo,
   LiveDemo,
+  BuildInPublic,
+  LaunchTweet,
 ] satisfies Page[];
