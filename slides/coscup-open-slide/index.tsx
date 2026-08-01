@@ -2593,8 +2593,7 @@ const SkillDocs: Page = () => {
 // with the comment dissolving away.
 const APPLY_CSS = `
 @keyframes coscup-cursor-in {
-  0%   { opacity: 0; transform: translate(420px, 300px); }
-  20%  { opacity: 1; }
+  0%   { opacity: 1; transform: translate(1100px, 760px); }
   100% { opacity: 1; transform: translate(0, 0); }
 }
 @keyframes coscup-click {
@@ -2653,7 +2652,7 @@ const ApplyDemo: Page = () => {
           return n + 1;
         });
       }, 55);
-    }, 2700);
+    }, 3000);
     return () => {
       clearTimeout(kickoff);
       clearInterval(timer);
@@ -2751,7 +2750,7 @@ const ApplyDemo: Page = () => {
             }}
           />
 
-          {/* Inspector cursor — glides in, clicks, gets out of the way */}
+          {/* Inspector cursor — enters from off-canvas, clicks ON the title */}
           {play && (
             <svg
               width={26}
@@ -2759,9 +2758,9 @@ const ApplyDemo: Page = () => {
               viewBox="0 0 13 15"
               style={{
                 position: 'absolute',
-                left: 402,
-                top: 46,
-                animation: `coscup-cursor-in 900ms ${EASE_ENTRANCE} 1000ms both, coscup-click 250ms ${EASE_OUT} 1950ms both, coscup-hide 350ms ${EASE_OUT} 2350ms forwards`,
+                left: 210,
+                top: 58,
+                animation: `coscup-cursor-in 1300ms ${EASE_ENTRANCE} 1000ms both, coscup-click 200ms ${EASE_OUT} 2350ms, coscup-hide 150ms ${EASE_OUT} 2470ms forwards`,
               }}
             >
               <path
@@ -2773,12 +2772,35 @@ const ApplyDemo: Page = () => {
             </svg>
           )}
 
-          {/* Comment pin — pops where the cursor clicked */}
+          {/* Comment mode — inspector selection ring with corner handles */}
           <div
             style={{
               position: 'absolute',
-              left: 404,
-              top: 44,
+              left: 54,
+              top: 46,
+              width: 340,
+              height: 50,
+              border: `1.5px solid ${wireBright}`,
+              borderRadius: 4,
+              ...(play
+                ? {
+                    animation: `coscup-fade 200ms ${EASE_OUT} 2450ms both, coscup-hide 300ms ${EASE_OUT} 5100ms forwards`,
+                  }
+                : { opacity: 0 }),
+            }}
+          >
+            <div style={{ position: 'absolute', left: -5, top: -5, width: 8, height: 8, background: wireBright }} />
+            <div style={{ position: 'absolute', right: -5, top: -5, width: 8, height: 8, background: wireBright }} />
+            <div style={{ position: 'absolute', left: -5, bottom: -5, width: 8, height: 8, background: wireBright }} />
+            <div style={{ position: 'absolute', right: -5, bottom: -5, width: 8, height: 8, background: wireBright }} />
+          </div>
+
+          {/* Comment pin — the cursor becomes this at the click point */}
+          <div
+            style={{
+              position: 'absolute',
+              left: 208,
+              top: 22,
               width: 40,
               height: 40,
               borderRadius: '50% 50% 50% 6px',
@@ -2790,7 +2812,7 @@ const ApplyDemo: Page = () => {
               transformOrigin: 'bottom left',
               ...(play
                 ? {
-                    animation: `coscup-pop 380ms ${EASE_ENTRANCE} 2150ms both, coscup-pop-out 380ms ${EASE_OUT} 5100ms forwards`,
+                    animation: `coscup-pop 320ms ${EASE_ENTRANCE} 2450ms both, coscup-pop-out 380ms ${EASE_OUT} 5100ms forwards`,
                   }
                 : { opacity: 0 }),
             }}
@@ -2802,8 +2824,8 @@ const ApplyDemo: Page = () => {
           <div
             style={{
               position: 'absolute',
-              left: 464,
-              top: 30,
+              left: 268,
+              top: 6,
               width: 274,
               height: 62,
               padding: '14px 24px',
@@ -2817,7 +2839,7 @@ const ApplyDemo: Page = () => {
               transformOrigin: 'left bottom',
               ...(play
                 ? {
-                    animation: `coscup-bubble-in 420ms ${EASE_ENTRANCE} 2450ms both, coscup-pop-out 380ms ${EASE_OUT} 5100ms forwards`,
+                    animation: `coscup-bubble-in 420ms ${EASE_ENTRANCE} 2750ms both, coscup-pop-out 380ms ${EASE_OUT} 5100ms forwards`,
                   }
                 : { opacity: 0 }),
             }}
