@@ -1520,6 +1520,79 @@ const Workspace: Page = () => {
   );
 };
 
+// Page 13 — the payoff: the idea arrives. App-splash reveal of the mark.
+const IdeaBorn: Page = () => {
+  const animate = useIsActivePage();
+
+  return (
+    <div
+      style={{
+        ...fill,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 72,
+      }}
+    >
+      <style>{entranceCss}</style>
+
+      <div
+        className={animate ? 'coscup-bloom' : undefined}
+        style={{
+          width: 200,
+          height: 200,
+          borderRadius: 48,
+          overflow: 'hidden',
+          boxShadow: '0 0 0 1px rgba(255, 255, 255, 0.12)',
+          animationDelay: '0ms',
+        }}
+      >
+        <img
+          src={openSlide}
+          alt="open-slide logo"
+          style={{ width: 200, height: 200, objectFit: 'cover' }}
+        />
+      </div>
+
+      <h2
+        className={animate ? 'coscup-rise' : undefined}
+        style={{
+          fontFamily: 'var(--osd-font-display)',
+          fontSize: 'var(--osd-size-hero)',
+          fontWeight: 700,
+          letterSpacing: '-0.02em',
+          lineHeight: 1.05,
+          margin: 0,
+          color: 'var(--osd-text)',
+          animationDelay: '600ms',
+        }}
+      >
+        open-slide
+      </h2>
+    </div>
+  );
+};
+
+// The reveal gets the second (and last) BREATH of the deck.
+IdeaBorn.transition = {
+  duration: 460,
+  exit: {
+    duration: 180,
+    easing: EASE_IN,
+    keyframes: [{ opacity: 1 }, { opacity: 0 }],
+  },
+  enter: {
+    duration: 240,
+    delay: 300,
+    easing: EASE_OUT,
+    keyframes: [
+      { opacity: 0, transform: 'translateY(8px)' },
+      { opacity: 1, transform: 'translateY(0)' },
+    ],
+  },
+};
+
 // House transition — RISE. One motion DNA across the deck.
 export const transition: SlideTransition = {
   duration: 280,
@@ -1581,4 +1654,5 @@ export default [
   Unified,
   VisualOnly,
   Workspace,
+  IdeaBorn,
 ] satisfies Page[];
