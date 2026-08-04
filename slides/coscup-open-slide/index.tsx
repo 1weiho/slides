@@ -3885,6 +3885,750 @@ const GrowthPlaybook: Page = () => {
   );
 };
 
+// ——— Takeaways chapter (pages 30–34): the four lessons to take home ———
+
+// Page 30 — chapter turn.
+const Takeaways: Page = () => {
+  const animate = useIsActivePage();
+
+  return (
+    <div
+      style={{
+        ...fill,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 32,
+      }}
+    >
+      <style>{entranceCss}</style>
+      <h2
+        className={animate ? 'coscup-rise' : undefined}
+        style={{
+          fontFamily: 'var(--osd-font-display)',
+          fontSize: 150,
+          fontWeight: 700,
+          letterSpacing: '-0.02em',
+          lineHeight: 1.1,
+          margin: 0,
+          color: 'var(--osd-text)',
+          animationDelay: '0ms',
+        }}
+      >
+        Takeaways
+      </h2>
+      <p
+        className={animate ? 'coscup-rise' : undefined}
+        style={{ fontSize: 36, color: muted, margin: 0, animationDelay: '160ms' }}
+      >
+        四個想讓你帶回家的心法
+      </p>
+    </div>
+  );
+};
+
+// Section break — same BREATH cadence as the other chapter turns.
+Takeaways.transition = {
+  duration: 460,
+  exit: {
+    duration: 180,
+    easing: EASE_IN,
+    keyframes: [{ opacity: 1 }, { opacity: 0 }],
+  },
+  enter: {
+    duration: 240,
+    delay: 300,
+    easing: EASE_OUT,
+    keyframes: [
+      { opacity: 0, transform: 'translateY(8px)' },
+      { opacity: 1, transform: 'translateY(0)' },
+    ],
+  },
+};
+
+// Shared header block for the four takeaway pages.
+const TakeawayHeader = ({
+  n,
+  title,
+  sub,
+  animate,
+}: {
+  n: string;
+  title: string;
+  sub: string;
+  animate: boolean;
+}) => (
+  <div>
+    <div
+      className={animate ? 'coscup-rise' : undefined}
+      style={{
+        fontFamily: monoFont,
+        fontSize: 26,
+        letterSpacing: '0.22em',
+        color: 'var(--osd-accent)',
+        animationDelay: '0ms',
+      }}
+    >
+      TAKEAWAY {n}
+    </div>
+    <h2
+      className={animate ? 'coscup-rise' : undefined}
+      style={{
+        fontFamily: 'var(--osd-font-display)',
+        fontSize: 76,
+        fontWeight: 700,
+        letterSpacing: '-0.02em',
+        lineHeight: 1.15,
+        margin: '20px 0 0',
+        color: 'var(--osd-text)',
+        animationDelay: '90ms',
+      }}
+    >
+      {title}
+    </h2>
+    <p
+      className={animate ? 'coscup-rise' : undefined}
+      style={{ fontSize: 34, lineHeight: 1.5, color: muted, margin: '22px 0 0', animationDelay: '180ms' }}
+    >
+      {sub}
+    </p>
+  </div>
+);
+
+// One dim jotted-note card for the idea wall (static rotate lives on the
+// wrapper so the bloom animation's fill doesn't overwrite it).
+const IdeaNote = ({
+  rotate,
+  delay,
+  animate,
+  w1,
+  w2,
+  w3,
+}: {
+  rotate: number;
+  delay: number;
+  animate: boolean;
+  w1: number;
+  w2: number;
+  w3: number;
+}) => (
+  <div style={{ transform: `rotate(${rotate}deg)` }}>
+    <div
+      className={animate ? 'coscup-bloom' : undefined}
+      style={{
+        width: 230,
+        height: 172,
+        border: `2px solid ${wireDim}`,
+        borderRadius: 18,
+        background: '#111114',
+        padding: '26px 28px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 18,
+        animationDelay: `${delay}ms`,
+      }}
+    >
+      <div style={{ width: w1, height: 10, borderRadius: 5, background: wireDim }} />
+      <div style={{ width: w2, height: 10, borderRadius: 5, background: wireDim }} />
+      <div style={{ width: w3, height: 10, borderRadius: 5, background: wireDim }} />
+    </div>
+  </div>
+);
+
+// Dashed connector arrow shared by the takeaway graphics.
+const DashedArrow = ({ animate, delay }: { animate: boolean; delay: number }) => (
+  <svg
+    className={animate ? 'coscup-fade' : undefined}
+    width={110}
+    height={40}
+    viewBox="0 0 110 40"
+    style={{ animationDelay: `${delay}ms`, flexShrink: 0 }}
+  >
+    <line
+      x1={4}
+      y1={20}
+      x2={90}
+      y2={20}
+      stroke={wire}
+      strokeWidth={2.5}
+      strokeDasharray="2 10"
+      strokeLinecap="round"
+    />
+    <path
+      d="M90 10 L106 20 L90 30"
+      fill="none"
+      stroke={wire}
+      strokeWidth={2.5}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+// Page 31 — capture every idea: scribbled notes, and the one line that
+// grew into the product.
+const CaptureIdeas: Page = () => {
+  const animate = useIsActivePage();
+
+  return (
+    <div
+      style={{
+        ...fill,
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        gap: 90,
+        padding: '0 180px',
+      }}
+    >
+      <style>{entranceCss}</style>
+      <TakeawayHeader
+        n="01"
+        title="記下每一個靈感"
+        sub="隨手記錄的念頭，就是未來作品的種子"
+        animate={animate}
+      />
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: 44 }}>
+        <IdeaNote rotate={-4} delay={250} animate={animate} w1={124} w2={168} w3={92} />
+        <IdeaNote rotate={3} delay={340} animate={animate} w1={156} w2={100} w3={140} />
+
+        {/* The seed note */}
+        <div style={{ transform: 'rotate(-2deg)' }}>
+          <div
+            className={animate ? 'coscup-bloom' : undefined}
+            style={{
+              width: 400,
+              border: '2px solid var(--osd-accent)',
+              borderRadius: 18,
+              background: 'rgba(41, 151, 255, 0.08)',
+              padding: '26px 30px',
+              animationDelay: '480ms',
+            }}
+          >
+            <div style={{ fontSize: 27, lineHeight: 1.5, color: 'var(--osd-text)' }}>
+              如果有一個讓 agent 直接寫投影片的框架？
+            </div>
+            <div style={{ marginTop: 14, fontFamily: monoFont, fontSize: 21, color: muted }}>
+              騎車時記下的一行字
+            </div>
+          </div>
+        </div>
+
+        <DashedArrow animate={animate} delay={900} />
+
+        {/* What it grew into */}
+        <div
+          className={animate ? 'coscup-bloom' : undefined}
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 18,
+            animationDelay: '1050ms',
+          }}
+        >
+          <div
+            style={{
+              width: 132,
+              height: 132,
+              borderRadius: 30,
+              overflow: 'hidden',
+              boxShadow: '0 0 0 1px rgba(255, 255, 255, 0.12)',
+            }}
+          >
+            <img src={openSlide} alt="open-slide" style={{ width: 132, height: 132, objectFit: 'cover' }} />
+          </div>
+          <div style={{ fontFamily: monoFont, fontSize: 22, color: muted }}>open-slide</div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// One milestone dot on the "just build" line.
+const DoDot = ({ label, on }: { label: string; on?: boolean }) => (
+  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, zIndex: 1 }}>
+    <div
+      style={{
+        width: 22,
+        height: 22,
+        borderRadius: '50%',
+        background: on ? 'var(--osd-accent)' : '#111114',
+        border: `2.5px solid ${on ? 'var(--osd-accent)' : wire}`,
+      }}
+    />
+    <div style={{ fontSize: 26, color: on ? 'var(--osd-text)' : muted }}>{label}</div>
+  </div>
+);
+
+// Page 32 — build first: the thinking loop goes nowhere, the doing line
+// moves forward.
+const BiasToAction: Page = () => {
+  const animate = useIsActivePage();
+
+  return (
+    <div
+      style={{
+        ...fill,
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        gap: 76,
+        padding: '0 180px',
+      }}
+    >
+      <style>{entranceCss}</style>
+      <TakeawayHeader n="02" title="先做再想" sub="動手本身，就是最好的解法" animate={animate} />
+
+      <div style={{ display: 'flex', gap: 48 }}>
+        {/* The thinking loop — dimmed, circling in place */}
+        <div
+          className={animate ? 'coscup-bloom' : undefined}
+          style={{
+            flex: 1,
+            border: `2px solid ${wireDim}`,
+            borderRadius: 24,
+            background: '#111114',
+            padding: '34px 44px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 22,
+            animationDelay: '280ms',
+          }}
+        >
+          <div style={{ fontSize: 32, fontWeight: 600, color: muted }}>只想不做</div>
+          <div style={{ position: 'relative', width: 220, height: 220 }}>
+            <svg width={220} height={220} viewBox="0 0 220 220">
+              <circle
+                cx={110}
+                cy={110}
+                r={86}
+                fill="none"
+                stroke={wire}
+                strokeWidth={2.5}
+                strokeDasharray="3 12"
+                strokeLinecap="round"
+              />
+              <path
+                d="M189 98 L196 114 L203 98"
+                fill="none"
+                stroke={wire}
+                strokeWidth={2.5}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            <div
+              style={{
+                position: 'absolute',
+                inset: 0,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: 30,
+                color: muted,
+              }}
+            >
+              想了又想
+            </div>
+          </div>
+          <div style={{ fontSize: 27, color: muted }}>永遠停在原地</div>
+        </div>
+
+        {/* The doing line — bright, every step is progress */}
+        <div
+          className={animate ? 'coscup-bloom' : undefined}
+          style={{
+            flex: 1,
+            border: `2px solid ${wire}`,
+            borderRadius: 24,
+            background: '#111114',
+            padding: '34px 44px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 22,
+            animationDelay: '430ms',
+          }}
+        >
+          <div style={{ fontSize: 32, fontWeight: 600, color: 'var(--osd-text)' }}>邊做邊想</div>
+          <div
+            style={{
+              height: 220,
+              display: 'flex',
+              alignItems: 'center',
+              alignSelf: 'stretch',
+              padding: '0 12px',
+            }}
+          >
+            <div style={{ position: 'relative', width: '100%' }}>
+              <div
+                style={{
+                  position: 'absolute',
+                  top: 10,
+                  left: 24,
+                  right: 24,
+                  height: 2.5,
+                  background: wire,
+                }}
+              />
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <DoDot label="動手" />
+                <DoDot label="卡關" />
+                <DoDot label="修正" />
+                <DoDot label="完成" on />
+              </div>
+            </div>
+          </div>
+          <div style={{ fontSize: 27, color: 'var(--osd-accent)' }}>每一步都是進度</div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// One platform card for the be-seen page.
+const PlatformCard = ({
+  glyph,
+  name,
+  role,
+  note,
+  delay,
+  animate,
+}: {
+  glyph: React.ReactNode;
+  name: string;
+  role: string;
+  note: string;
+  delay: number;
+  animate: boolean;
+}) => (
+  <div
+    className={animate ? 'coscup-bloom' : undefined}
+    style={{
+      width: 660,
+      border: `2px solid ${wire}`,
+      borderRadius: 22,
+      background: '#111114',
+      padding: '28px 32px',
+      display: 'flex',
+      alignItems: 'center',
+      gap: 28,
+      animationDelay: `${delay}ms`,
+    }}
+  >
+    <div
+      style={{
+        width: 92,
+        height: 92,
+        borderRadius: 22,
+        border: `2px solid ${wireDim}`,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexShrink: 0,
+      }}
+    >
+      {glyph}
+    </div>
+    <div>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 18 }}>
+        <div style={{ fontSize: 34, fontWeight: 700, color: 'var(--osd-text)' }}>{name}</div>
+        <div style={{ fontSize: 27, color: 'var(--osd-accent)' }}>{role}</div>
+      </div>
+      <div style={{ marginTop: 12, fontSize: 23, color: muted }}>{note}</div>
+    </div>
+  </div>
+);
+
+// Page 33 — push the work in front of people: one product, two channels.
+const BeSeen: Page = () => {
+  const animate = useIsActivePage();
+
+  return (
+    <div
+      style={{
+        ...fill,
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        gap: 76,
+        padding: '0 180px',
+      }}
+    >
+      <style>{entranceCss}</style>
+      <TakeawayHeader
+        n="03"
+        title="主動讓作品被看見"
+        sub="把作品推到社群面前，而不是等著被發現"
+        animate={animate}
+      />
+
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        {/* The work */}
+        <div
+          className={animate ? 'coscup-bloom' : undefined}
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 18,
+            animationDelay: '280ms',
+          }}
+        >
+          <div
+            style={{
+              width: 128,
+              height: 128,
+              borderRadius: 30,
+              overflow: 'hidden',
+              boxShadow: '0 0 0 1px rgba(255, 255, 255, 0.12)',
+            }}
+          >
+            <img src={openSlide} alt="你的作品" style={{ width: 128, height: 128, objectFit: 'cover' }} />
+          </div>
+          <div style={{ fontFamily: monoFont, fontSize: 22, color: muted }}>你的作品</div>
+        </div>
+
+        {/* Diverging dashed connectors */}
+        <svg
+          className={animate ? 'coscup-fade' : undefined}
+          width={210}
+          height={370}
+          viewBox="0 0 210 370"
+          style={{ animationDelay: '600ms', flexShrink: 0 }}
+        >
+          <circle cx={10} cy={185} r={4} fill={wire} />
+          <path
+            d="M10 185 C 105 185, 105 92, 184 92"
+            fill="none"
+            stroke={wire}
+            strokeWidth={2.5}
+            strokeDasharray="2 10"
+            strokeLinecap="round"
+          />
+          <path
+            d="M10 185 C 105 185, 105 278, 184 278"
+            fill="none"
+            stroke={wire}
+            strokeWidth={2.5}
+            strokeDasharray="2 10"
+            strokeLinecap="round"
+          />
+          <path
+            d="M178 84 L192 92 L178 100"
+            fill="none"
+            stroke={wire}
+            strokeWidth={2.5}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <path
+            d="M178 270 L192 278 L178 286"
+            fill="none"
+            stroke={wire}
+            strokeWidth={2.5}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+
+        {/* The two channels */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 36 }}>
+          <PlatformCard
+            glyph={
+              <div
+                style={{
+                  fontSize: 54,
+                  fontWeight: 600,
+                  color: 'rgba(245, 245, 247, 0.85)',
+                  fontFamily: 'var(--osd-font-display)',
+                }}
+              >
+                @
+              </div>
+            }
+            name="Threads"
+            role="經營本地能見度"
+            note="中文發文，觸及臺灣開發者圈"
+            delay={750}
+            animate={animate}
+          />
+          <PlatformCard
+            glyph={
+              <svg width={40} height={40} viewBox="0 0 24 24">
+                <path
+                  d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"
+                  fill="rgba(245, 245, 247, 0.85)"
+                />
+              </svg>
+            }
+            name="X"
+            role="接觸國際社群"
+            note="英文發文，連上全球開源社群"
+            delay={900}
+            animate={animate}
+          />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Page 34 — dare to speak English: one merged PR becomes a real connection.
+const SpeakEnglish: Page = () => {
+  const animate = useIsActivePage();
+
+  return (
+    <div
+      style={{
+        ...fill,
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        gap: 84,
+        padding: '0 180px',
+      }}
+    >
+      <style>{entranceCss}</style>
+      <TakeawayHeader
+        n="04"
+        title="勇敢用英文交流"
+        sub="一則開源貢獻，可能成為最重要的連結"
+        animate={animate}
+      />
+
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 36 }}>
+        {/* The merged PR */}
+        <div
+          className={animate ? 'coscup-bloom' : undefined}
+          style={{
+            width: 620,
+            border: `2px solid ${wire}`,
+            borderRadius: 20,
+            background: '#111114',
+            padding: '28px 34px',
+            animationDelay: '280ms',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
+                background: 'rgba(130, 80, 223, 0.25)',
+                color: '#b795f5',
+                borderRadius: 999,
+                padding: '6px 18px',
+                fontSize: 22,
+                fontWeight: 600,
+              }}
+            >
+              <svg width={22} height={22} viewBox="0 0 24 24">
+                <circle cx={6} cy={5} r={2.6} fill="none" stroke="#b795f5" strokeWidth={2} />
+                <circle cx={6} cy={19} r={2.6} fill="none" stroke="#b795f5" strokeWidth={2} />
+                <circle cx={18} cy={12} r={2.6} fill="none" stroke="#b795f5" strokeWidth={2} />
+                <path
+                  d="M6 7.6 L6 16.4 M6 8 C 6 11.6, 9.5 12, 15.4 12"
+                  fill="none"
+                  stroke="#b795f5"
+                  strokeWidth={2}
+                  strokeLinecap="round"
+                />
+              </svg>
+              Merged
+            </div>
+            <div style={{ fontFamily: monoFont, fontSize: 22, color: muted }}>你喜歡的開源專案</div>
+          </div>
+
+          <div
+            style={{
+              marginTop: 22,
+              fontFamily: monoFont,
+              fontSize: 26,
+              lineHeight: 1.4,
+              color: 'var(--osd-text)',
+            }}
+          >
+            fix: zh-TW locale fallback (#128)
+          </div>
+
+          <div style={{ marginTop: 24, display: 'flex', alignItems: 'center', gap: 14 }}>
+            <div style={{ width: 40, height: 40, borderRadius: '50%', overflow: 'hidden', flexShrink: 0 }}>
+              <img src={avatar} alt="Yiwei Ho" style={{ width: 40, height: 40, objectFit: 'cover' }} />
+            </div>
+            <div style={{ fontSize: 22, color: muted }}>@1weiho · 用英文寫下說明與討論</div>
+          </div>
+        </div>
+
+        <DashedArrow animate={animate} delay={700} />
+
+        {/* The DM that followed */}
+        <div
+          className={animate ? 'coscup-bloom' : undefined}
+          style={{
+            width: 620,
+            border: `2px solid ${wire}`,
+            borderRadius: 20,
+            background: '#111114',
+            padding: '28px 34px',
+            animationDelay: '850ms',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+            <svg width={26} height={26} viewBox="0 0 24 24">
+              <path
+                d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"
+                fill="rgba(245, 245, 247, 0.85)"
+              />
+            </svg>
+            <div style={{ fontFamily: monoFont, fontSize: 22, color: muted }}>Direct Message</div>
+          </div>
+
+          <div
+            style={{
+              marginTop: 22,
+              border: `2px solid ${wireDim}`,
+              borderRadius: '4px 20px 20px 20px',
+              padding: '20px 26px',
+              fontSize: 25,
+              lineHeight: 1.5,
+              color: 'var(--osd-text)',
+            }}
+          >
+            Hey! Saw your PR — really solid work. Want to build something together? 👋
+          </div>
+
+          <div style={{ marginTop: 20, display: 'flex', alignItems: 'center', gap: 14 }}>
+            <div
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: '50%',
+                border: `2px solid ${wire}`,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+              }}
+            >
+              <svg width={24} height={24} viewBox="0 0 24 24">
+                <circle cx={12} cy={9} r={4} fill="none" stroke={wire} strokeWidth={2} />
+                <path d="M4.5 21 C 4.5 15.5, 19.5 15.5, 19.5 21" fill="none" stroke={wire} strokeWidth={2} strokeLinecap="round" />
+              </svg>
+            </div>
+            <div style={{ fontSize: 22, color: muted }}>海外的專案維護者</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default [
   Cover,
   Logo,
@@ -3915,4 +4659,9 @@ export default [
   FeatureTweets,
   BetterTogether,
   GrowthPlaybook,
+  Takeaways,
+  CaptureIdeas,
+  BiasToAction,
+  BeSeen,
+  SpeakEnglish,
 ] satisfies Page[];
