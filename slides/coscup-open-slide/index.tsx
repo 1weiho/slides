@@ -114,8 +114,66 @@ const entranceCss = `
   to   { opacity: 0; }
 }
 .coscup-hide { animation: coscup-hide 400ms ${EASE_OUT} both; }
+@keyframes coscup-grow-x {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+.coscup-grow-x { transform-origin: left center; animation: coscup-grow-x 800ms ${EASE_ENTRANCE} both; }
+@keyframes coscup-pop {
+  0%   { opacity: 0; transform: scale(0.4); }
+  70%  { opacity: 1; transform: scale(1.15); }
+  100% { opacity: 1; transform: scale(1); }
+}
+.coscup-pop { animation: coscup-pop 600ms ${EASE_ENTRANCE} both; }
+@keyframes coscup-wipe {
+  from { clip-path: inset(-20% 100% -20% -20%); }
+  to   { clip-path: inset(-20% -20% -20% -20%); }
+}
+.coscup-wipe { animation: coscup-wipe 700ms ${EASE_OUT} both; }
+@keyframes coscup-spin {
+  to { transform: rotate(360deg); }
+}
+.coscup-spin-slow { animation: coscup-spin 9s linear infinite; }
+@keyframes coscup-think {
+  0%, 100% { opacity: 0.8; }
+  50%      { opacity: 0.3; }
+}
+.coscup-think { animation: coscup-think 2400ms ease-in-out infinite; }
+@keyframes coscup-ring {
+  0%   { box-shadow: 0 0 0 0 rgba(41, 151, 255, 0.4); }
+  70%  { box-shadow: 0 0 0 16px rgba(41, 151, 255, 0); }
+  100% { box-shadow: 0 0 0 16px rgba(41, 151, 255, 0); }
+}
+.coscup-ring-pulse { animation: coscup-ring 2600ms ease-out infinite; }
+@keyframes coscup-ripple {
+  0%   { transform: scale(1); opacity: 0.45; }
+  100% { transform: scale(1.9); opacity: 0; }
+}
+.coscup-ripple-ring { animation: coscup-ripple 2600ms ease-out infinite; }
+@keyframes coscup-travel {
+  0%   { offset-distance: 0%; opacity: 0; }
+  10%  { opacity: 1; }
+  50%  { opacity: 1; }
+  60%  { offset-distance: 100%; opacity: 0; }
+  100% { offset-distance: 100%; opacity: 0; }
+}
+.coscup-travel-dot { animation: coscup-travel 3200ms cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+@keyframes coscup-typing-dot {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.35; }
+  30%           { transform: translateY(-6px); opacity: 1; }
+}
+.coscup-typing-dot { animation: coscup-typing-dot 900ms ease-in-out infinite; }
+@keyframes coscup-wave-hand {
+  0%, 100% { transform: rotate(0deg); }
+  30%      { transform: rotate(18deg); }
+  60%      { transform: rotate(-8deg); }
+  80%      { transform: rotate(10deg); }
+}
+.coscup-wave { display: inline-block; transform-origin: 70% 80%; animation: coscup-wave-hand 1100ms ease-in-out 2; }
 @media (prefers-reduced-motion: reduce) {
-  .coscup-rise, .coscup-bloom, .coscup-draw, .coscup-fade, .coscup-token, .coscup-settle { animation: none; }
+  .coscup-rise, .coscup-bloom, .coscup-draw, .coscup-fade, .coscup-token, .coscup-settle,
+  .coscup-grow-x, .coscup-pop, .coscup-wipe, .coscup-spin-slow, .coscup-think,
+  .coscup-ring-pulse, .coscup-ripple-ring, .coscup-travel-dot, .coscup-typing-dot, .coscup-wave { animation: none; }
   .coscup-hide { animation: none; opacity: 0; }
 }
 `;
@@ -3918,9 +3976,20 @@ const Takeaways: Page = () => {
       >
         Takeaways
       </h2>
+      <div
+        className={animate ? 'coscup-grow-x' : undefined}
+        style={{
+          width: 220,
+          height: 5,
+          borderRadius: 3,
+          background: 'var(--osd-accent)',
+          transformOrigin: 'center',
+          animationDelay: '500ms',
+        }}
+      />
       <p
         className={animate ? 'coscup-rise' : undefined}
-        style={{ fontSize: 36, color: muted, margin: 0, animationDelay: '160ms' }}
+        style={{ fontSize: 36, color: muted, margin: 0, animationDelay: '200ms' }}
       >
         四個想讓你帶回家的心法
       </p>
@@ -3996,8 +4065,9 @@ const TakeawayHeader = ({
   </div>
 );
 
-// One dim jotted-note card for the idea wall (static rotate lives on the
-// wrapper so the bloom animation's fill doesn't overwrite it).
+// One dim jotted-note card for the idea wall. The static rotate lives on the
+// wrapper so the settle animation's fill doesn't overwrite it; the note
+// tosses in from above and its scribbles then draw themselves.
 const IdeaNote = ({
   rotate,
   delay,
@@ -4015,8 +4085,10 @@ const IdeaNote = ({
 }) => (
   <div style={{ transform: `rotate(${rotate}deg)` }}>
     <div
-      className={animate ? 'coscup-bloom' : undefined}
+      className={animate ? 'coscup-settle' : undefined}
       style={{
+        '--sy': '-72px',
+        '--sr': `${rotate * 5}deg`,
         width: 230,
         height: 172,
         border: `2px solid ${wireDim}`,
@@ -4027,19 +4099,29 @@ const IdeaNote = ({
         flexDirection: 'column',
         gap: 18,
         animationDelay: `${delay}ms`,
-      }}
+      } as React.CSSProperties}
     >
-      <div style={{ width: w1, height: 10, borderRadius: 5, background: wireDim }} />
-      <div style={{ width: w2, height: 10, borderRadius: 5, background: wireDim }} />
-      <div style={{ width: w3, height: 10, borderRadius: 5, background: wireDim }} />
+      <div
+        className={animate ? 'coscup-grow-x' : undefined}
+        style={{ width: w1, height: 10, borderRadius: 5, background: wireDim, animationDelay: `${delay + 340}ms` }}
+      />
+      <div
+        className={animate ? 'coscup-grow-x' : undefined}
+        style={{ width: w2, height: 10, borderRadius: 5, background: wireDim, animationDelay: `${delay + 460}ms` }}
+      />
+      <div
+        className={animate ? 'coscup-grow-x' : undefined}
+        style={{ width: w3, height: 10, borderRadius: 5, background: wireDim, animationDelay: `${delay + 580}ms` }}
+      />
     </div>
   </div>
 );
 
-// Dashed connector arrow shared by the takeaway graphics.
+// Dashed connector arrow shared by the takeaway graphics — wipes in
+// left-to-right as if being drawn.
 const DashedArrow = ({ animate, delay }: { animate: boolean; delay: number }) => (
   <svg
-    className={animate ? 'coscup-fade' : undefined}
+    className={animate ? 'coscup-wipe' : undefined}
     width={110}
     height={40}
     viewBox="0 0 110 40"
@@ -4094,8 +4176,11 @@ const CaptureIdeas: Page = () => {
         <IdeaNote rotate={-4} delay={250} animate={animate} w1={124} w2={168} w3={92} />
         <IdeaNote rotate={3} delay={340} animate={animate} w1={156} w2={100} w3={140} />
 
-        {/* The seed note */}
-        <div style={{ transform: 'rotate(-2deg)' }}>
+        {/* The seed note — lands, then keeps pulsing like a live idea */}
+        <div
+          className={animate ? 'coscup-ring-pulse' : undefined}
+          style={{ transform: 'rotate(-2deg)', borderRadius: 18, animationDelay: '2400ms' }}
+        >
           <div
             className={animate ? 'coscup-bloom' : undefined}
             style={{
@@ -4104,62 +4189,83 @@ const CaptureIdeas: Page = () => {
               borderRadius: 18,
               background: 'rgba(41, 151, 255, 0.08)',
               padding: '26px 30px',
-              animationDelay: '480ms',
+              animationDelay: '620ms',
             }}
           >
             <div style={{ fontSize: 27, lineHeight: 1.5, color: 'var(--osd-text)' }}>
               如果有一個讓 agent 直接寫投影片的框架？
             </div>
-            <div style={{ marginTop: 14, fontFamily: monoFont, fontSize: 21, color: muted }}>
+            <div
+              className={animate ? 'coscup-fade' : undefined}
+              style={{ marginTop: 14, fontFamily: monoFont, fontSize: 21, color: muted, animationDelay: '1150ms' }}
+            >
               騎車時記下的一行字
             </div>
           </div>
         </div>
 
-        <DashedArrow animate={animate} delay={900} />
+        <DashedArrow animate={animate} delay={1250} />
 
         {/* What it grew into */}
-        <div
-          className={animate ? 'coscup-bloom' : undefined}
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: 18,
-            animationDelay: '1050ms',
-          }}
-        >
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 18 }}>
           <div
+            className={animate ? 'coscup-pop' : undefined}
             style={{
               width: 132,
               height: 132,
               borderRadius: 30,
               overflow: 'hidden',
               boxShadow: '0 0 0 1px rgba(255, 255, 255, 0.12)',
+              animationDelay: '1600ms',
             }}
           >
             <img src={openSlide} alt="open-slide" style={{ width: 132, height: 132, objectFit: 'cover' }} />
           </div>
-          <div style={{ fontFamily: monoFont, fontSize: 22, color: muted }}>open-slide</div>
+          <div
+            className={animate ? 'coscup-fade' : undefined}
+            style={{ fontFamily: monoFont, fontSize: 22, color: muted, animationDelay: '2000ms' }}
+          >
+            open-slide
+          </div>
         </div>
       </div>
     </div>
   );
 };
 
-// One milestone dot on the "just build" line.
-const DoDot = ({ label, on }: { label: string; on?: boolean }) => (
+// One milestone dot on the "just build" line — pops in on its beat; the
+// final dot keeps pulsing.
+const DoDot = ({
+  label,
+  on,
+  animate,
+  delay,
+}: {
+  label: string;
+  on?: boolean;
+  animate: boolean;
+  delay: number;
+}) => (
   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, zIndex: 1 }}>
+    <div className={animate ? 'coscup-pop' : undefined} style={{ animationDelay: `${delay}ms` }}>
+      <div
+        className={on && animate ? 'coscup-ring-pulse' : undefined}
+        style={{
+          width: 22,
+          height: 22,
+          borderRadius: '50%',
+          background: on ? 'var(--osd-accent)' : '#111114',
+          border: `2.5px solid ${on ? 'var(--osd-accent)' : wire}`,
+          animationDelay: `${delay + 750}ms`,
+        }}
+      />
+    </div>
     <div
-      style={{
-        width: 22,
-        height: 22,
-        borderRadius: '50%',
-        background: on ? 'var(--osd-accent)' : '#111114',
-        border: `2.5px solid ${on ? 'var(--osd-accent)' : wire}`,
-      }}
-    />
-    <div style={{ fontSize: 26, color: on ? 'var(--osd-text)' : muted }}>{label}</div>
+      className={animate ? 'coscup-fade' : undefined}
+      style={{ fontSize: 26, color: on ? 'var(--osd-text)' : muted, animationDelay: `${delay + 160}ms` }}
+    >
+      {label}
+    </div>
   </div>
 );
 
@@ -4201,7 +4307,12 @@ const BiasToAction: Page = () => {
         >
           <div style={{ fontSize: 32, fontWeight: 600, color: muted }}>只想不做</div>
           <div style={{ position: 'relative', width: 220, height: 220 }}>
-            <svg width={220} height={220} viewBox="0 0 220 220">
+            <svg
+              className={animate ? 'coscup-spin-slow' : undefined}
+              width={220}
+              height={220}
+              viewBox="0 0 220 220"
+            >
               <circle
                 cx={110}
                 cy={110}
@@ -4222,6 +4333,7 @@ const BiasToAction: Page = () => {
               />
             </svg>
             <div
+              className={animate ? 'coscup-think' : undefined}
               style={{
                 position: 'absolute',
                 inset: 0,
@@ -4230,12 +4342,18 @@ const BiasToAction: Page = () => {
                 justifyContent: 'center',
                 fontSize: 30,
                 color: muted,
+                animationDelay: '1200ms',
               }}
             >
               想了又想
             </div>
           </div>
-          <div style={{ fontSize: 27, color: muted }}>永遠停在原地</div>
+          <div
+            className={animate ? 'coscup-fade' : undefined}
+            style={{ fontSize: 27, color: muted, animationDelay: '1400ms' }}
+          >
+            永遠停在原地
+          </div>
         </div>
 
         {/* The doing line — bright, every step is progress */}
@@ -4266,6 +4384,7 @@ const BiasToAction: Page = () => {
           >
             <div style={{ position: 'relative', width: '100%' }}>
               <div
+                className={animate ? 'coscup-grow-x' : undefined}
                 style={{
                   position: 'absolute',
                   top: 10,
@@ -4273,17 +4392,23 @@ const BiasToAction: Page = () => {
                   right: 24,
                   height: 2.5,
                   background: wire,
+                  animationDelay: '900ms',
                 }}
               />
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <DoDot label="動手" />
-                <DoDot label="卡關" />
-                <DoDot label="修正" />
-                <DoDot label="完成" on />
+                <DoDot label="動手" animate={animate} delay={1000} />
+                <DoDot label="卡關" animate={animate} delay={1220} />
+                <DoDot label="修正" animate={animate} delay={1440} />
+                <DoDot label="完成" on animate={animate} delay={1660} />
               </div>
             </div>
           </div>
-          <div style={{ fontSize: 27, color: 'var(--osd-accent)' }}>每一步都是進度</div>
+          <div
+            className={animate ? 'coscup-rise' : undefined}
+            style={{ fontSize: 27, color: 'var(--osd-accent)', animationDelay: '2000ms' }}
+          >
+            每一步都是進度
+          </div>
         </div>
       </div>
     </div>
@@ -4307,8 +4432,9 @@ const PlatformCard = ({
   animate: boolean;
 }) => (
   <div
-    className={animate ? 'coscup-bloom' : undefined}
+    className={animate ? 'coscup-settle' : undefined}
     style={{
+      '--sx': '70px',
       width: 660,
       border: `2px solid ${wire}`,
       borderRadius: 22,
@@ -4318,7 +4444,7 @@ const PlatformCard = ({
       alignItems: 'center',
       gap: 28,
       animationDelay: `${delay}ms`,
-    }}
+    } as React.CSSProperties}
   >
     <div
       style={{
@@ -4368,16 +4494,10 @@ const BeSeen: Page = () => {
       />
 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        {/* The work */}
+        {/* The work — blooms in, then keeps broadcasting ripples */}
         <div
           className={animate ? 'coscup-bloom' : undefined}
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: 18,
-            animationDelay: '280ms',
-          }}
+          style={{ position: 'relative', animationDelay: '280ms' }}
         >
           <div
             style={{
@@ -4390,12 +4510,83 @@ const BeSeen: Page = () => {
           >
             <img src={openSlide} alt="你的作品" style={{ width: 128, height: 128, objectFit: 'cover' }} />
           </div>
-          <div style={{ fontFamily: monoFont, fontSize: 22, color: muted }}>你的作品</div>
+          <div
+            className={animate ? 'coscup-ripple-ring' : undefined}
+            style={{
+              position: 'absolute',
+              inset: 0,
+              borderRadius: 30,
+              border: '2px solid var(--osd-accent)',
+              opacity: 0,
+              pointerEvents: 'none',
+              animationDelay: '1500ms',
+            }}
+          />
+          <div
+            className={animate ? 'coscup-ripple-ring' : undefined}
+            style={{
+              position: 'absolute',
+              inset: 0,
+              borderRadius: 30,
+              border: '2px solid var(--osd-accent)',
+              opacity: 0,
+              pointerEvents: 'none',
+              animationDelay: '2800ms',
+            }}
+          />
+          {/* Out of flow so the flex row centers the icon itself on the connector origin */}
+          <div
+            style={{
+              position: 'absolute',
+              top: 'calc(100% + 18px)',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              whiteSpace: 'nowrap',
+              fontFamily: monoFont,
+              fontSize: 22,
+              color: muted,
+            }}
+          >
+            你的作品
+          </div>
         </div>
 
-        {/* Diverging dashed connectors */}
+        {/* Diverging dashed connectors — wipe in, then signals travel along them */}
+        <div style={{ position: 'relative', width: 210, height: 370, flexShrink: 0 }}>
+          <div
+            className={animate ? 'coscup-travel-dot' : undefined}
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: 10,
+              height: 10,
+              borderRadius: 5,
+              background: 'var(--osd-accent)',
+              opacity: 0,
+              offsetPath: "path('M10 185 C 105 185, 105 92, 184 92')",
+              offsetRotate: '0deg',
+              animationDelay: '1600ms',
+            }}
+          />
+          <div
+            className={animate ? 'coscup-travel-dot' : undefined}
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: 10,
+              height: 10,
+              borderRadius: 5,
+              background: 'var(--osd-accent)',
+              opacity: 0,
+              offsetPath: "path('M10 185 C 105 185, 105 278, 184 278')",
+              offsetRotate: '0deg',
+              animationDelay: '3200ms',
+            }}
+          />
         <svg
-          className={animate ? 'coscup-fade' : undefined}
+          className={animate ? 'coscup-wipe' : undefined}
           width={210}
           height={370}
           viewBox="0 0 210 370"
@@ -4435,6 +4626,7 @@ const BeSeen: Page = () => {
             strokeLinejoin="round"
           />
         </svg>
+        </div>
 
         {/* The two channels */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 36 }}>
@@ -4516,6 +4708,7 @@ const SpeakEnglish: Page = () => {
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             <div
+              className={animate ? 'coscup-pop' : undefined}
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -4526,6 +4719,7 @@ const SpeakEnglish: Page = () => {
                 padding: '6px 18px',
                 fontSize: 22,
                 fontWeight: 600,
+                animationDelay: '750ms',
               }}
             >
               <svg width={22} height={22} viewBox="0 0 24 24">
@@ -4542,22 +4736,32 @@ const SpeakEnglish: Page = () => {
               </svg>
               Merged
             </div>
-            <div style={{ fontFamily: monoFont, fontSize: 22, color: muted }}>你喜歡的開源專案</div>
+            <div
+              className={animate ? 'coscup-fade' : undefined}
+              style={{ fontFamily: monoFont, fontSize: 22, color: muted, animationDelay: '900ms' }}
+            >
+              你喜歡的開源專案
+            </div>
           </div>
 
           <div
+            className={animate ? 'coscup-rise' : undefined}
             style={{
               marginTop: 22,
               fontFamily: monoFont,
               fontSize: 26,
               lineHeight: 1.4,
               color: 'var(--osd-text)',
+              animationDelay: '550ms',
             }}
           >
             fix: zh-TW locale fallback (#128)
           </div>
 
-          <div style={{ marginTop: 24, display: 'flex', alignItems: 'center', gap: 14 }}>
+          <div
+            className={animate ? 'coscup-fade' : undefined}
+            style={{ marginTop: 24, display: 'flex', alignItems: 'center', gap: 14, animationDelay: '1050ms' }}
+          >
             <div style={{ width: 40, height: 40, borderRadius: '50%', overflow: 'hidden', flexShrink: 0 }}>
               <img src={avatar} alt="Yiwei Ho" style={{ width: 40, height: 40, objectFit: 'cover' }} />
             </div>
@@ -4565,19 +4769,20 @@ const SpeakEnglish: Page = () => {
           </div>
         </div>
 
-        <DashedArrow animate={animate} delay={700} />
+        <DashedArrow animate={animate} delay={1150} />
 
         {/* The DM that followed */}
         <div
-          className={animate ? 'coscup-bloom' : undefined}
+          className={animate ? 'coscup-settle' : undefined}
           style={{
+            '--sx': '70px',
             width: 620,
             border: `2px solid ${wire}`,
             borderRadius: 20,
             background: '#111114',
             padding: '28px 34px',
-            animationDelay: '850ms',
-          }}
+            animationDelay: '1350ms',
+          } as React.CSSProperties}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
             <svg width={26} height={26} viewBox="0 0 24 24">
@@ -4589,9 +4794,11 @@ const SpeakEnglish: Page = () => {
             <div style={{ fontFamily: monoFont, fontSize: 22, color: muted }}>Direct Message</div>
           </div>
 
+          {/* Typing dots hold the bubble until the message "arrives" */}
           <div
             style={{
               marginTop: 22,
+              position: 'relative',
               border: `2px solid ${wireDim}`,
               borderRadius: '4px 20px 20px 20px',
               padding: '20px 26px',
@@ -4600,10 +4807,44 @@ const SpeakEnglish: Page = () => {
               color: 'var(--osd-text)',
             }}
           >
-            Hey! Saw your PR — really solid work. Want to build something together? 👋
+            <div className={animate ? 'coscup-fade' : undefined} style={{ animationDelay: '3100ms' }}>
+              Hey! Saw your PR — really solid work. Want to build something together?{' '}
+              <span className={animate ? 'coscup-wave' : undefined} style={{ animationDelay: '3500ms' }}>
+                👋
+              </span>
+            </div>
+            {animate && (
+              <div
+                style={{
+                  position: 'absolute',
+                  left: 26,
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  display: 'flex',
+                  gap: 8,
+                  animation: `coscup-fade 300ms ${EASE_OUT} 1900ms both, coscup-hide 300ms ${EASE_OUT} 2900ms both`,
+                }}
+              >
+                <span
+                  className="coscup-typing-dot"
+                  style={{ width: 9, height: 9, borderRadius: '50%', background: muted, animationDelay: '0ms' }}
+                />
+                <span
+                  className="coscup-typing-dot"
+                  style={{ width: 9, height: 9, borderRadius: '50%', background: muted, animationDelay: '150ms' }}
+                />
+                <span
+                  className="coscup-typing-dot"
+                  style={{ width: 9, height: 9, borderRadius: '50%', background: muted, animationDelay: '300ms' }}
+                />
+              </div>
+            )}
           </div>
 
-          <div style={{ marginTop: 20, display: 'flex', alignItems: 'center', gap: 14 }}>
+          <div
+            className={animate ? 'coscup-fade' : undefined}
+            style={{ marginTop: 20, display: 'flex', alignItems: 'center', gap: 14, animationDelay: '1800ms' }}
+          >
             <div
               style={{
                 width: 40,
