@@ -5,6 +5,8 @@ import avatar from '@assets/avatar.jpg';
 import geistFont from '@assets/geist.woff2';
 import geistMonoFont from '@assets/geist-mono.woff2';
 import openSlide from './assets/open-slide.png';
+import planetscale from './assets/planetscale.webp';
+import planetscaleMark from './assets/planetscale_dark.svg';
 import cursorMeetup from './assets/cursor-meetup.webp';
 import claudeIcon from './assets/claude-ai-icon.svg';
 import firstVersion from './assets/first-version.webp';
@@ -19,6 +21,7 @@ import threadsQr from './assets/threads-qr.png';
 
 export const notes: (string | undefined)[] = [
   "https://coscup.org/2026/session/JTPCAZ",
+  undefined,
   undefined,
   undefined,
   undefined,
@@ -508,6 +511,77 @@ const Stars: Page = () => {
     </div>
   );
 };
+
+// Page 4 — full-bleed photo with a bottom-right speaker credit lockup.
+const PlanetScale: Page = () => {
+  const animate = useIsActivePage();
+  return (
+    <div style={{ width: '100%', height: '100%', background: 'var(--osd-bg)', position: 'relative' }}>
+      <style>{entranceCss}</style>
+      <img
+        src={planetscale}
+        alt="PlanetScale 的簡報現場"
+        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+      />
+
+      {/* Scrim so the credit stays legible over the lit part of the stage. */}
+      <div
+        style={{
+          position: 'absolute',
+          right: 0,
+          bottom: 0,
+          width: 900,
+          height: 320,
+          background:
+            'radial-gradient(120% 120% at 100% 100%, rgba(0, 0, 0, 0.78) 0%, rgba(0, 0, 0, 0) 70%)',
+          pointerEvents: 'none',
+        }}
+      />
+
+      <div
+        className={animate ? 'coscup-rise' : undefined}
+        style={{
+          position: 'absolute',
+          right: 88,
+          bottom: 80,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 22,
+          ...(animate ? { animationDelay: '400ms' } : null),
+        }}
+      >
+        <img src={planetscaleMark} alt="PlanetScale" style={{ width: 54, height: 54 }} />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <span
+            style={{
+              fontFamily: monoFont,
+              fontSize: 22,
+              letterSpacing: '0.14em',
+              textTransform: 'uppercase',
+              color: 'rgba(245, 245, 247, 0.6)',
+            }}
+          >
+            PlanetScale CEO
+          </span>
+          <span
+            style={{
+              fontFamily: 'var(--osd-font-display)',
+              fontSize: 40,
+              fontWeight: 600,
+              letterSpacing: '-0.01em',
+              color: 'var(--osd-text)',
+            }}
+          >
+            Sam Lambert
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Full-bleed photo page — snap in, no transition.
+PlanetScale.transition = { duration: 0 };
 
 const Meetup: Page = () => (
   <div style={{ width: '100%', height: '100%', background: 'var(--osd-bg)', position: 'relative' }}>
@@ -5042,6 +5116,7 @@ export default [
   Cover,
   Logo,
   Stars,
+  PlanetScale,
   Meetup,
   HtmlFile,
   TokenCost,
