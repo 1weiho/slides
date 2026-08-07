@@ -22,6 +22,7 @@ import qaQr from './assets/qa-qr.png';
 
 export const notes: (string | undefined)[] = [
   "https://coscup.org/2026/session/JTPCAZ",
+  undefined, // QaScan — QA QR code
   undefined,
   undefined,
   undefined,
@@ -281,6 +282,87 @@ const Cover: Page = () => {
           <div style={{ fontSize: 36, fontWeight: 500, color: 'var(--osd-text)' }}>Yiwei Ho</div>
         </div>
       </div>
+    </div>
+  );
+};
+
+const QaScan: Page = () => {
+  const animate = useIsActivePage();
+  const rise = animate ? 'coscup-rise' : undefined;
+
+  return (
+    <div
+      style={{
+        ...fill,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        textAlign: 'center',
+        padding: '0 160px',
+      }}
+    >
+      <style>{entranceCss}</style>
+      <style>{qaCss}</style>
+
+      <div
+        className={rise}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 16,
+          animationDelay: '0ms',
+        }}
+      >
+        <span
+          className={animate ? 'coscup-qa-blink' : undefined}
+          style={{ width: 12, height: 12, borderRadius: '50%', background: '#ff453a' }}
+        />
+        <span
+          style={{
+            fontFamily: monoFont,
+            fontSize: 26,
+            fontWeight: 600,
+            letterSpacing: '0.28em',
+            color: muted,
+          }}
+        >
+          LIVE Q&A
+        </span>
+      </div>
+
+      <div
+        className={animate ? 'coscup-bloom' : undefined}
+        style={{
+          width: 460,
+          height: 460,
+          boxSizing: 'border-box',
+          padding: 28,
+          borderRadius: 'var(--osd-radius)',
+          background: '#ffffff',
+          marginTop: 64,
+          animationDelay: '240ms',
+        }}
+      >
+        <img
+          src={qaQr}
+          alt="QA QR code"
+          style={{ width: '100%', height: '100%', imageRendering: 'pixelated' }}
+        />
+      </div>
+
+      <p
+        className={rise}
+        style={{
+          fontSize: 30,
+          lineHeight: 1.5,
+          color: muted,
+          margin: '52px 0 0',
+          animationDelay: '460ms',
+        }}
+      >
+        隨時掃描提問
+      </p>
     </div>
   );
 };
@@ -4988,7 +5070,7 @@ const SocialQr = ({
 // QA live board — 串接 COSCUP 2026 QA 後台（見 coscup-2026-qa/API.md）。
 // 上場前把這兩個值改成部署的網域與 ADMIN_PASSWORD。
 const QA_API_BASE = 'https://coscup-2026-qa.vercel.app';
-const QA_ADMIN_PASSWORD = 'change-me';
+const QA_ADMIN_PASSWORD = '0115';
 const QA_POLL_MS = 2000;
 // 一次最多納入測量的題數 — fit 計算的上限，實際顯示數由測量結果決定。
 const QA_MEASURE_MAX = 12;
@@ -5549,6 +5631,7 @@ const ThankYou: Page = () => {
 
 export default [
   Cover,
+  QaScan,
   Logo,
   Stars,
   PlanetScale,
