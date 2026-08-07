@@ -5070,7 +5070,7 @@ const SocialQr = ({
 // QA live board — 串接 COSCUP 2026 QA 後台（見 coscup-2026-qa/API.md）。
 // 上場前把這兩個值改成部署的網域與 ADMIN_PASSWORD。
 const QA_API_BASE = 'https://coscup-2026-qa.vercel.app';
-const QA_ADMIN_PASSWORD = '0115';
+const QA_ADMIN_PASSWORD = 'change-me';
 const QA_POLL_MS = 2000;
 // 一次最多納入測量的題數 — fit 計算的上限，實際顯示數由測量結果決定。
 const QA_MEASURE_MAX = 12;
