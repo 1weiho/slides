@@ -38,7 +38,7 @@ export const notes: (string | undefined)[] = [
 
 // Register Geist once, idempotently — keyed to this slide's id so other
 // slides' fonts aren't suppressed on the home page.
-const FONT_STYLE_ID = 'osd-webfont-coscup-open-slide';
+const FONT_STYLE_ID = 'osd-webfont-coscup-2026';
 if (typeof document !== 'undefined' && !document.getElementById(FONT_STYLE_ID)) {
   const style = document.createElement('style');
   style.id = FONT_STYLE_ID;
@@ -3571,7 +3571,7 @@ Cover.transition = {
 };
 
 export const meta: SlideMeta = {
-  title: 'open-slide：從騎車時的靈感到衝上 GitHub Trending',
+  title: 'COSCUP 2026',
   createdAt: '2026-07-31T16:18:33.859Z',
 };
 // Page 25 — chapter turn: shipping the journey in the open.
