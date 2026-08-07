@@ -5155,6 +5155,8 @@ const QaLive: Page = () => {
   const [fitCount, setFitCount] = React.useState(4);
   const listRef = React.useRef<HTMLDivElement | null>(null);
   const measureRef = React.useRef<HTMLDivElement | null>(null);
+  const cardRefs = React.useRef(new Map<string, HTMLDivElement>());
+  const lastTops = React.useRef(new Map<string, number>());
 
   React.useEffect(() => {
     if (!active) return;
@@ -5227,6 +5229,32 @@ const QaLive: Page = () => {
       count += 1;
     }
     setFitCount(Math.max(1, count));
+  });
+
+  // FLIP：排序變動時卡片從舊位置滑到新位置。每次 render 都快照
+  // offsetTop（layout 座標，不受畫布縮放與進行中的 transform 影響），
+  // 位置有差就先反向位移再過渡回原位；transform 只動 wrapper，
+  // 不會碰到卡片本身的樣式。
+  React.useLayoutEffect(() => {
+    const prev = lastTops.current;
+    const next = new Map<string, number>();
+    cardRefs.current.forEach((el, id) => {
+      if (el.isConnected) next.set(id, el.offsetTop);
+    });
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prev.size > 0 && !reduceMotion) {
+      cardRefs.current.forEach((el, id) => {
+        const oldTop = prev.get(id);
+        const newTop = next.get(id);
+        if (oldTop === undefined || newTop === undefined || oldTop === newTop) return;
+        el.style.transition = 'none';
+        el.style.transform = `translateY(${oldTop - newTop}px)`;
+        el.getBoundingClientRect(); // force reflow so the jump isn't painted
+        el.style.transition = `transform 450ms ${EASE_ENTRANCE}`;
+        el.style.transform = '';
+      });
+    }
+    lastTops.current = next;
   });
 
   const shown = visible.slice(0, fitCount);
@@ -5362,13 +5390,20 @@ const QaLive: Page = () => {
           ) : (
             <>
               {shown.map((q) => (
-                <QaCard
+                <div
                   key={q.id}
-                  q={q}
-                  onPin={() => mutate(q.id, 'pin', q.pinned)}
-                  onAnswer={() => answerQuestion(q)}
-                  onIgnore={() => mutate(q.id, 'ignore', false)}
-                />
+                  ref={(el) => {
+                    if (el) cardRefs.current.set(q.id, el);
+                    else cardRefs.current.delete(q.id);
+                  }}
+                >
+                  <QaCard
+                    q={q}
+                    onPin={() => mutate(q.id, 'pin', q.pinned)}
+                    onAnswer={() => answerQuestion(q)}
+                    onIgnore={() => mutate(q.id, 'ignore', false)}
+                  />
+                </div>
               ))}
               {hiddenCount > 0 && (
                 <div style={{ fontSize: 24, color: muted, paddingLeft: 32 }}>
