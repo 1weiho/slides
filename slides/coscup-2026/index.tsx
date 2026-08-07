@@ -15,12 +15,14 @@ import launchVideo from './assets/launch-video.webp';
 import opus5Tweet from './assets/opus-5-tweet.webp';
 import xQr from './assets/x-qr.png';
 import threadsQr from './assets/threads-qr.png';
+import qaQr from './assets/qa-qr.png';
 
 
 
 
 export const notes: (string | undefined)[] = [
   "https://coscup.org/2026/session/JTPCAZ",
+  undefined, // QaScan — QA QR code
   undefined,
   undefined,
   undefined,
@@ -280,6 +282,87 @@ const Cover: Page = () => {
           <div style={{ fontSize: 36, fontWeight: 500, color: 'var(--osd-text)' }}>Yiwei Ho</div>
         </div>
       </div>
+    </div>
+  );
+};
+
+const QaScan: Page = () => {
+  const animate = useIsActivePage();
+  const rise = animate ? 'coscup-rise' : undefined;
+
+  return (
+    <div
+      style={{
+        ...fill,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        textAlign: 'center',
+        padding: '0 160px',
+      }}
+    >
+      <style>{entranceCss}</style>
+      <style>{qaCss}</style>
+
+      <div
+        className={rise}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 16,
+          animationDelay: '0ms',
+        }}
+      >
+        <span
+          className={animate ? 'coscup-qa-blink' : undefined}
+          style={{ width: 12, height: 12, borderRadius: '50%', background: '#ff453a' }}
+        />
+        <span
+          style={{
+            fontFamily: monoFont,
+            fontSize: 26,
+            fontWeight: 600,
+            letterSpacing: '0.28em',
+            color: muted,
+          }}
+        >
+          LIVE Q&A
+        </span>
+      </div>
+
+      <div
+        className={animate ? 'coscup-bloom' : undefined}
+        style={{
+          width: 460,
+          height: 460,
+          boxSizing: 'border-box',
+          padding: 28,
+          borderRadius: 'var(--osd-radius)',
+          background: '#ffffff',
+          marginTop: 64,
+          animationDelay: '240ms',
+        }}
+      >
+        <img
+          src={qaQr}
+          alt="QA QR code"
+          style={{ width: '100%', height: '100%', imageRendering: 'pixelated' }}
+        />
+      </div>
+
+      <p
+        className={rise}
+        style={{
+          fontSize: 30,
+          lineHeight: 1.5,
+          color: muted,
+          margin: '52px 0 0',
+          animationDelay: '460ms',
+        }}
+      >
+        隨時掃描提問
+      </p>
     </div>
   );
 };
@@ -4983,6 +5066,440 @@ const SocialQr = ({
   </div>
 );
 
+// ---------------------------------------------------------------------------
+// QA live board — 串接 COSCUP 2026 QA 後台（見 coscup-2026-qa/API.md）。
+// 上場前把這兩個值改成部署的網域與 ADMIN_PASSWORD。
+const QA_API_BASE = 'https://coscup-2026-qa.vercel.app';
+const QA_ADMIN_PASSWORD = 'change-me';
+const QA_POLL_MS = 2000;
+// 一次最多納入測量的題數 — fit 計算的上限，實際顯示數由測量結果決定。
+const QA_MEASURE_MAX = 12;
+
+type QaQuestion = {
+  id: string;
+  content: string;
+  authorName: string;
+  status: 'open' | 'answered' | 'ignored';
+  pinned: boolean;
+  createdAt: string;
+  voteCount: number;
+};
+
+// Mirrors the server ordering so optimistic updates re-sort instantly:
+// pinned → open → answered → more votes → earlier.
+const qaSort = (a: QaQuestion, b: QaQuestion) => {
+  if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
+  if (a.status !== b.status) return a.status === 'open' ? -1 : 1;
+  if (a.voteCount !== b.voteCount) return b.voteCount - a.voteCount;
+  return a.createdAt.localeCompare(b.createdAt);
+};
+
+const qaCss = `
+.coscup-qa-btn {
+  width: 52px; height: 52px; padding: 0;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(245, 245, 247, 0.7);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: background 150ms ${EASE_OUT}, border-color 150ms ${EASE_OUT}, color 150ms ${EASE_OUT};
+}
+.coscup-qa-btn:hover { background: rgba(255, 255, 255, 0.14); color: #f5f5f7; }
+.coscup-qa-btn-on { background: rgba(41, 151, 255, 0.16); border-color: rgba(41, 151, 255, 0.6); color: #2997ff; }
+.coscup-qa-btn-on:hover { background: rgba(41, 151, 255, 0.28); color: #2997ff; }
+@keyframes coscup-qa-blink {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.25; }
+}
+.coscup-qa-blink { animation: coscup-qa-blink 1600ms ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .coscup-qa-blink { animation: none; }
+}
+`;
+
+const QaActionButton = ({
+  title,
+  on,
+  onClick,
+  children,
+}: {
+  title: string;
+  on?: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) => (
+  <button
+    type="button"
+    title={title}
+    className={on ? 'coscup-qa-btn coscup-qa-btn-on' : 'coscup-qa-btn'}
+    // 擋掉點擊時的 focus — 畫布是 overflow-hidden 的縮放容器，
+    // 按鈕被 focus 會讓瀏覽器把整個畫布捲動到按鈕位置。
+    onMouseDown={(e) => e.preventDefault()}
+    onClick={(e) => {
+      e.stopPropagation();
+      onClick();
+    }}
+  >
+    {children}
+  </button>
+);
+
+const QaCard = ({
+  q,
+  onPin,
+  onAnswer,
+  onIgnore,
+}: {
+  q: QaQuestion;
+  onPin: () => void;
+  onAnswer: () => void;
+  onIgnore: () => void;
+}) => {
+  const answered = q.status === 'answered';
+  return (
+    <div
+      style={{
+        boxSizing: 'border-box',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 28,
+        padding: '22px 32px',
+        borderRadius: 20,
+        background: q.pinned ? 'rgba(41, 151, 255, 0.09)' : 'rgba(255, 255, 255, 0.04)',
+        border: q.pinned
+          ? '1px solid rgba(41, 151, 255, 0.5)'
+          : '1px solid rgba(255, 255, 255, 0.08)',
+        opacity: answered ? 0.4 : 1,
+        transition: `opacity 250ms ${EASE_OUT}, background 250ms ${EASE_OUT}, border-color 250ms ${EASE_OUT}`,
+      }}
+    >
+      <div style={{ width: 72, flexShrink: 0, textAlign: 'center' }}>
+        <div
+          style={{
+            fontFamily: monoFont,
+            fontSize: 36,
+            fontWeight: 700,
+            lineHeight: 1.1,
+            color: q.pinned ? 'var(--osd-accent)' : 'var(--osd-text)',
+          }}
+        >
+          {q.voteCount}
+        </div>
+        <div style={{ fontSize: 20, color: muted, letterSpacing: '0.2em', marginTop: 4 }}>票</div>
+      </div>
+
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div
+          style={{
+            fontSize: 30,
+            lineHeight: 1.35,
+            color: 'var(--osd-text)',
+            display: '-webkit-box',
+            WebkitLineClamp: 10,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+          }}
+        >
+          {q.content}
+        </div>
+        <div style={{ fontSize: 22, color: muted, marginTop: 8 }}>{q.authorName}</div>
+      </div>
+
+      <div style={{ display: 'flex', gap: 12, flexShrink: 0 }}>
+        <QaActionButton title={q.pinned ? '取消置頂' : '置頂'} on={q.pinned} onClick={onPin}>
+          <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 17v5" />
+            <path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1z" />
+          </svg>
+        </QaActionButton>
+        <QaActionButton title={answered ? '取消已回答' : '標記已回答'} on={answered} onClick={onAnswer}>
+          <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+            <path d="M20 6 9 17l-5-5" />
+          </svg>
+        </QaActionButton>
+        <QaActionButton title="忽略" onClick={onIgnore}>
+          <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+            <path d="M18 6 6 18" />
+            <path d="m6 6 12 12" />
+          </svg>
+        </QaActionButton>
+      </div>
+    </div>
+  );
+};
+
+const QaLive: Page = () => {
+  const active = useIsActivePage();
+  const rise = active ? 'coscup-rise' : undefined;
+  const [questions, setQuestions] = React.useState<QaQuestion[] | null>(null);
+  const [error, setError] = React.useState(false);
+  const [fitCount, setFitCount] = React.useState(4);
+  const listRef = React.useRef<HTMLDivElement | null>(null);
+  const measureRef = React.useRef<HTMLDivElement | null>(null);
+  const cardRefs = React.useRef(new Map<string, HTMLDivElement>());
+  const lastTops = React.useRef(new Map<string, number>());
+
+  React.useEffect(() => {
+    if (!active) return;
+    let alive = true;
+    const load = async () => {
+      try {
+        const res = await fetch(`${QA_API_BASE}/api/questions`, {
+          headers: { Authorization: `Bearer ${QA_ADMIN_PASSWORD}` },
+        });
+        if (!res.ok) throw new Error(String(res.status));
+        const data = (await res.json()) as { questions: QaQuestion[] };
+        if (!alive) return;
+        setQuestions(data.questions);
+        setError(false);
+      } catch {
+        if (alive) setError(true);
+      }
+    };
+    load();
+    const timer = window.setInterval(load, QA_POLL_MS);
+    return () => {
+      alive = false;
+      window.clearInterval(timer);
+    };
+  }, [active]);
+
+  const mutate = async (id: string, action: 'pin' | 'answer' | 'ignore', undo: boolean) => {
+    try {
+      const res = await fetch(`${QA_API_BASE}/api/questions/${id}/${action}`, {
+        method: undo ? 'DELETE' : 'POST',
+        headers: { Authorization: `Bearer ${QA_ADMIN_PASSWORD}` },
+      });
+      if (!res.ok) return;
+      const data = (await res.json()) as { question: QaQuestion };
+      setQuestions((prev) =>
+        prev ? prev.map((q) => (q.id === data.question.id ? data.question : q)) : prev,
+      );
+    } catch {
+      // 下一次 polling 會把狀態拉回正確值。
+    }
+  };
+
+  // 標記已回答時一併取消置頂（取消已回答則不動置頂狀態）。
+  const answerQuestion = async (q: QaQuestion) => {
+    const undo = q.status === 'answered';
+    await mutate(q.id, 'answer', undo);
+    if (!undo && q.pinned) await mutate(q.id, 'pin', true);
+  };
+
+  const visible = (questions ?? [])
+    .filter((q) => q.status !== 'ignored')
+    .sort(qaSort)
+    .slice(0, QA_MEASURE_MAX);
+
+  // 卡片高度隨內容變動，改用隱藏測量層算出實際塞得下幾張卡。
+  // setFitCount 在值不變時 bail out，不會造成 re-render 迴圈。
+  React.useLayoutEffect(() => {
+    const list = listRef.current;
+    const layer = measureRef.current;
+    if (!list || !layer) return;
+    const budget = list.clientHeight;
+    const cards = Array.from(layer.children) as HTMLElement[];
+    let used = 0;
+    let count = 0;
+    for (let i = 0; i < cards.length; i += 1) {
+      const h = cards[i].offsetHeight + (i > 0 ? 16 : 0);
+      const moreLine = i + 1 < cards.length ? 48 : 0;
+      if (used + h + moreLine > budget) break;
+      used += h;
+      count += 1;
+    }
+    setFitCount(Math.max(1, count));
+  });
+
+  // FLIP：排序變動時卡片從舊位置滑到新位置。每次 render 都快照
+  // offsetTop（layout 座標，不受畫布縮放與進行中的 transform 影響），
+  // 位置有差就先反向位移再過渡回原位；transform 只動 wrapper，
+  // 不會碰到卡片本身的樣式。
+  React.useLayoutEffect(() => {
+    const prev = lastTops.current;
+    const next = new Map<string, number>();
+    cardRefs.current.forEach((el, id) => {
+      if (el.isConnected) next.set(id, el.offsetTop);
+    });
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prev.size > 0 && !reduceMotion) {
+      cardRefs.current.forEach((el, id) => {
+        const oldTop = prev.get(id);
+        const newTop = next.get(id);
+        if (oldTop === undefined || newTop === undefined || oldTop === newTop) return;
+        el.style.transition = 'none';
+        el.style.transform = `translateY(${oldTop - newTop}px)`;
+        el.getBoundingClientRect(); // force reflow so the jump isn't painted
+        el.style.transition = `transform 450ms ${EASE_ENTRANCE}`;
+        el.style.transform = '';
+      });
+    }
+    lastTops.current = next;
+  });
+
+  const shown = visible.slice(0, fitCount);
+  const hiddenCount = visible.length - shown.length;
+
+  return (
+    <div style={{ ...fill, display: 'flex', flexDirection: 'column', padding: '90px 120px' }}>
+      <style>{entranceCss}</style>
+      <style>{qaCss}</style>
+
+      <div
+        className={rise}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          animationDelay: '0ms',
+        }}
+      >
+        <h1
+          style={{
+            fontFamily: 'var(--osd-font-display)',
+            fontSize: 64,
+            fontWeight: 700,
+            letterSpacing: '-0.02em',
+            lineHeight: 1.1,
+            margin: 0,
+          }}
+        >
+          現場 QA
+        </h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <span
+            className={error ? undefined : 'coscup-qa-blink'}
+            style={{
+              width: 14,
+              height: 14,
+              borderRadius: '50%',
+              background: error ? '#ff9f0a' : '#ff453a',
+            }}
+          />
+          <span
+            style={{
+              fontFamily: monoFont,
+              fontSize: 24,
+              letterSpacing: '0.24em',
+              color: error ? '#ff9f0a' : 'rgba(245, 245, 247, 0.7)',
+            }}
+          >
+            {error ? 'RECONNECTING' : 'LIVE'}
+          </span>
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', gap: 72, flex: 1, minHeight: 0, marginTop: 48 }}>
+        <div
+          className={rise}
+          style={{
+            width: 380,
+            flexShrink: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            animationDelay: '160ms',
+          }}
+        >
+          <div
+            style={{
+              width: 380,
+              height: 380,
+              boxSizing: 'border-box',
+              padding: 24,
+              borderRadius: 'var(--osd-radius)',
+              background: '#ffffff',
+            }}
+          >
+            <img
+              src={qaQr}
+              alt="QA QR code"
+              style={{ width: '100%', height: '100%', imageRendering: 'pixelated' }}
+            />
+          </div>
+          <div style={{ fontSize: 27, color: muted, marginTop: 32, textAlign: 'center' }}>
+            掃描提問，幫想聽的問題投票
+          </div>
+        </div>
+
+        <div
+          ref={listRef}
+          className={rise}
+          style={{
+            flex: 1,
+            minWidth: 0,
+            position: 'relative',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 16,
+            animationDelay: '300ms',
+          }}
+        >
+          <div
+            ref={measureRef}
+            aria-hidden
+            style={{
+              position: 'absolute',
+              inset: 0,
+              visibility: 'hidden',
+              pointerEvents: 'none',
+              overflow: 'hidden',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 16,
+            }}
+          >
+            {visible.map((q) => (
+              <QaCard key={q.id} q={q} onPin={() => {}} onAnswer={() => {}} onIgnore={() => {}} />
+            ))}
+          </div>
+          {shown.length === 0 ? (
+            <div
+              style={{
+                flex: 1,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: 34,
+                color: muted,
+              }}
+            >
+              {questions === null ? '連線中…' : '還沒有問題，掃描 QR code 搶頭香'}
+            </div>
+          ) : (
+            <>
+              {shown.map((q) => (
+                <div
+                  key={q.id}
+                  ref={(el) => {
+                    if (el) cardRefs.current.set(q.id, el);
+                    else cardRefs.current.delete(q.id);
+                  }}
+                >
+                  <QaCard
+                    q={q}
+                    onPin={() => mutate(q.id, 'pin', q.pinned)}
+                    onAnswer={() => answerQuestion(q)}
+                    onIgnore={() => mutate(q.id, 'ignore', false)}
+                  />
+                </div>
+              ))}
+              {hiddenCount > 0 && (
+                <div style={{ fontSize: 24, color: muted, paddingLeft: 32 }}>
+                  還有 {hiddenCount} 題
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const ThankYou: Page = () => {
   const animate = useIsActivePage();
   const rise = animate ? 'coscup-rise' : undefined;
@@ -5114,6 +5631,7 @@ const ThankYou: Page = () => {
 
 export default [
   Cover,
+  QaScan,
   Logo,
   Stars,
   PlanetScale,
@@ -5148,5 +5666,6 @@ export default [
   BiasToAction,
   BeSeen,
   SpeakEnglish,
+  QaLive,
   ThankYou,
 ] satisfies Page[];
