@@ -3992,6 +3992,144 @@ const BetterTogether: Page = () => {
   );
 };
 
+// ——— Zara's blog post — near-full-bleed editorial sheet ———
+// The article sinks into darkness toward the bottom edge (the fade implies it
+// continues), and her avatar morphs into the next page's attribution row.
+const paperBg = '#f7f4ee';
+const paperInk = '#171310';
+const paperMuted = '#8a8377';
+const serifFont = 'Georgia, "Times New Roman", serif';
+
+const ZaraBlog: Page = () => {
+  const animate = useIsActivePage();
+
+  return (
+    <div style={{ ...fill, overflow: 'hidden' }}>
+      <style>{entranceCss}</style>
+
+      {/* Paper sheet — runs past the bottom edge; the gradient swallows it. */}
+      <div
+        className={animate ? 'coscup-rise' : undefined}
+        style={{
+          position: 'absolute',
+          left: 110,
+          right: 110,
+          top: 84,
+          bottom: -4,
+          background: paperBg,
+          borderRadius: '28px 28px 0 0',
+          overflow: 'hidden',
+          animationDelay: '0ms',
+        }}
+      >
+        <div
+          style={{
+            width: 1160,
+            margin: '0 auto',
+            paddingTop: 72,
+            color: paperInk,
+            fontFamily: serifFont,
+          }}
+        >
+          {/* Masthead rule + kicker */}
+          <div
+            style={{
+              borderTop: `3px solid ${paperInk}`,
+              paddingTop: 20,
+              display: 'flex',
+              justifyContent: 'space-between',
+              fontFamily: monoFont,
+              fontSize: 20,
+              letterSpacing: '0.18em',
+              color: paperMuted,
+            }}
+          >
+            <span>BLOG</span>
+            <span>GROWING ON X</span>
+          </div>
+
+          <h1
+            style={{
+              fontSize: 72,
+              fontWeight: 700,
+              lineHeight: 1.14,
+              letterSpacing: '-0.015em',
+              margin: '34px 0 0',
+            }}
+          >
+            How I grew 50k followers on X in 9 months (while being myself)
+          </h1>
+
+          {/* Byline — the avatar is the morph source for the next page. */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 22, marginTop: 44 }}>
+            <MorphElement id="zara-avatar">
+              <div
+                style={{
+                  width: 72,
+                  height: 72,
+                  borderRadius: '50%',
+                  overflow: 'hidden',
+                  flexShrink: 0,
+                  boxShadow: '0 0 0 1px rgba(23, 19, 16, 0.12)',
+                }}
+              >
+                <img src={zara} alt="Zara Zhang" style={{ width: 72, height: 72, objectFit: 'cover' }} />
+              </div>
+            </MorphElement>
+            <div style={{ fontFamily: 'var(--osd-font-body)' }}>
+              <div style={{ fontSize: 29, fontWeight: 600, lineHeight: 1.3 }}>Zara Zhang</div>
+              <div style={{ fontSize: 21, fontFamily: monoFont, color: paperMuted, lineHeight: 1.4 }}>
+                @zarazhangrui
+              </div>
+            </div>
+          </div>
+
+          {/* Article body — fades into black; only the opening needs to read. */}
+          <div style={{ marginTop: 52, fontSize: 30, lineHeight: 1.72 }}>
+            <p style={{ margin: 0 }}>
+              <span
+                style={{
+                  float: 'left',
+                  fontSize: 112,
+                  lineHeight: 0.84,
+                  fontWeight: 700,
+                  padding: '10px 22px 0 0',
+                }}
+              >
+                M
+              </span>
+              ost people fail to grow on X because they have the wrong mental model. They think of X
+              as a stage, where you come up and make a speech to an audience.
+            </p>
+            <p style={{ margin: '34px 0 0' }}>
+              The right mental model for X is a <em>party</em>. When you walk into a party, you
+              don't just go to a corner and start talking into the void. You find an existing
+              cluster of people, listen to what they're already talking about, and join the
+              conversation.
+            </p>
+            <h3 style={{ fontSize: 40, fontWeight: 700, margin: '54px 0 0' }}>1. Tune your feed</h3>
+            <p style={{ margin: '26px 0 0' }}>
+              Think of this as “figuring out which parties to join and which crowds you wanna hang
+              out with”. If your feed is full of slop and clickbait, you won't be inspired to post.
+            </p>
+          </div>
+        </div>
+
+        {/* Darkness — the deeper the article goes, the dimmer it gets. */}
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            background:
+              'linear-gradient(180deg, rgba(0, 0, 0, 0) 54%, rgba(0, 0, 0, 0.38) 70%, rgba(0, 0, 0, 0.78) 84%, #000000 97%)',
+            pointerEvents: 'none',
+          }}
+        />
+      </div>
+    </div>
+  );
+};
+
 // One numbered takeaway row for the X-growth playbook.
 const PlaybookRow = ({ n, text }: { n: string; text: string }) => (
   <div style={{ display: 'flex', alignItems: 'baseline', gap: 32 }}>
@@ -4066,29 +4204,25 @@ const GrowthPlaybook: Page = () => {
         <Step duration={240}>
           <PlaybookRow n="05" text="目標不是漲粉，而是做自己的同時漲粉" />
         </Step>
-        <div
-          className={animate ? 'coscup-rise' : undefined}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 18,
-            marginTop: 72,
-            animationDelay: '250ms',
-          }}
-        >
-          <div
-            style={{
-              width: 52,
-              height: 52,
-              borderRadius: '50%',
-              overflow: 'hidden',
-              flexShrink: 0,
-              boxShadow: '0 0 0 1px rgba(255, 255, 255, 0.12)',
-            }}
-          >
-            <img src={zara} alt="Zara Zhang" style={{ width: 52, height: 52, objectFit: 'cover' }} />
-          </div>
-          <div>
+        {/* Attribution — the avatar is the morph landing spot for the blog
+            page's byline. No entrance transform on this row: its rect is
+            snapshotted at the cut. Text waits for the clone to land. */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 18, marginTop: 72 }}>
+          <MorphElement id="zara-avatar">
+            <div
+              style={{
+                width: 52,
+                height: 52,
+                borderRadius: '50%',
+                overflow: 'hidden',
+                flexShrink: 0,
+                boxShadow: '0 0 0 1px rgba(255, 255, 255, 0.12)',
+              }}
+            >
+              <img src={zara} alt="Zara Zhang" style={{ width: 52, height: 52, objectFit: 'cover' }} />
+            </div>
+          </MorphElement>
+          <div className={animate ? 'coscup-fade' : undefined} style={{ animationDelay: `${MORPH_MS}ms` }}>
             <div style={{ fontSize: 25, fontWeight: 600, color: 'var(--osd-text)', lineHeight: 1.3 }}>
               Zara Zhang
             </div>
@@ -4101,6 +4235,25 @@ const GrowthPlaybook: Page = () => {
     </div>
   );
 };
+
+// The blog page dissolves in quietly (no morph flag, so the unpaired avatar
+// id doesn't double-animate at the BetterTogether → blog cut); advancing to
+// the playbook morphs the avatar from the byline into the attribution row.
+ZaraBlog.transition = {
+  duration: 280,
+  exit: {
+    duration: 224,
+    easing: EASE_IN,
+    keyframes: [{ opacity: 1 }, { opacity: 0 }],
+  },
+  enter: {
+    duration: 308,
+    delay: 112,
+    easing: EASE_OUT,
+    keyframes: [{ opacity: 0 }, { opacity: 1 }],
+  },
+};
+GrowthPlaybook.transition = morphTransition;
 
 // ——— Takeaways chapter (pages 30–34): the four lessons to take home ———
 
@@ -5660,6 +5813,7 @@ export default [
   LaunchTweet,
   FeatureTweets,
   BetterTogether,
+  ZaraBlog,
   GrowthPlaybook,
   Takeaways,
   CaptureIdeas,
